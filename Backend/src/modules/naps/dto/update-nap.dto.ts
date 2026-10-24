@@ -1,0 +1,118 @@
+import { ApiPropertyOptional } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
+import { IsInt, IsOptional, IsString, IsUUID, Min, ValidateNested } from 'class-validator';
+import { PointGeometryDto } from 'src/common/dto/point-geometry.dto';
+
+export class UpdateNapDto {
+
+  // ========================================================
+  // Asset
+  // ========================================================
+
+  @ApiPropertyOptional({
+    example: 'Phnom Penh NAP 01',
+  })
+  @IsOptional()
+  @IsString()
+  name?: string;
+
+  @ApiPropertyOptional({
+    example: 'active-status-uuid',
+  })
+  @IsOptional()
+  @IsUUID()
+  statusId?: string;
+
+  @ApiPropertyOptional({
+    example: 'NAP serving residential area.',
+  })
+  @IsOptional()
+  @IsString()
+  description?: string;
+
+  @ApiPropertyOptional({
+    type: PointGeometryDto,
+    description: 'Location of the NAP.',
+    example: {
+      type: 'Point',
+      coordinates: [
+        104.91725,
+        11.5624,
+      ],
+    },
+  })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => PointGeometryDto)
+  geometry?: PointGeometryDto;
+
+  // ========================================================
+  // NAP
+  // ========================================================
+
+  @ApiPropertyOptional({
+    example: 16,
+    description:
+      'Number of ports available on the NAP.',
+  })
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  capacity?: number;
+
+  // ========================================================
+  // Physical Identification
+  // ========================================================
+
+  @ApiPropertyOptional({
+    example: 'NAP-TAG-001',
+    description: 'Physical asset tag or label.',
+  })
+  @IsOptional()
+  @IsString()
+  assetTag?: string;
+
+  @ApiPropertyOptional({
+    example: 'SN-NAP-001',
+    description: 'Manufacturer serial number.',
+  })
+  @IsOptional()
+  @IsString()
+  serialNumber?: string;
+
+  // ========================================================
+  // Lifecycle
+  // ========================================================
+
+  @ApiPropertyOptional({
+    example: '2026-08-01',
+    description: 'Date when the asset was purchased.',
+  })
+  @IsOptional()
+  @IsString()
+  purchaseDate?: string;
+
+  @ApiPropertyOptional({
+    example: '2026-08-15',
+    description: 'Date when the asset was installed.',
+  })
+  @IsOptional()
+  @IsString()
+  installationDate?: string;
+
+  @ApiPropertyOptional({
+    example: '2026-08-15',
+    description: 'Start date of the asset warranty.',
+  })
+  @IsOptional()
+  @IsString()
+  warrantyStart?: string;
+
+  @ApiPropertyOptional({
+    example: '2028-08-15',
+    description: 'End date of the asset warranty.',
+  })
+  @IsOptional()
+  @IsString()
+  warrantyEnd?: string;
+}

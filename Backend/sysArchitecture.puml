@@ -1,0 +1,72 @@
+@startuml
+title Metrorin - Overall System Flow
+
+start
+
+:Open Metrorin Web Application;
+:Login;
+:Backend Authentication;
+
+if (Valid?) then (No)
+    :Login Error;
+    stop
+else (Yes)
+    :Generate JWT;
+    :Load Role & Permissions;
+    :Access Dashboard;
+endif
+
+:Select System Function;
+
+note right
+  • Dashboard
+    - Overview of network and assets
+    - View system status and statistics
+
+  • Map
+    - View network infrastructure
+    - Locate assets and connections
+
+  • Data Management
+    - Manage assets and network data
+    - Create / View / Update records
+    - Import the excel file
+
+  • Users & Roles
+    - Manage system users
+    - Manage roles and access
+
+  • System Logs
+    - View system activities
+    - Track user and system actions
+
+  • Report Generation
+    - Generate network reports
+    - Export system information
+
+  • System Settings
+    - Configure system settings
+    - Manage system preferences
+end note
+
+:Send API Request;
+:Validate JWT & Permissions;
+
+if (Authorized?) then (Yes)
+    :Process Request;
+    :Read / Write PostgreSQL + PostGIS;
+    :Return API Response;
+    :Display Result;
+else (No)
+    :Return 403 Forbidden;
+    :Display Access Denied;
+endif
+
+if (Logout?) then (Yes)
+    :Logout;
+    stop
+else (No)
+    :Return to Dashboard;
+endif
+
+@enduml

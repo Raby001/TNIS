@@ -1,0 +1,8 @@
+{
+  "recommendations": [
+    "Vue.volar",
+    "vitest.explorer",
+    "esbenp.prettier-vscode",
+    "saoudrizwan.claude-dev"
+  ]
+}

@@ -1,0 +1,122 @@
+@import "tailwindcss";
+
+/* ---------------------------------------------------------------------------
+ * z-index ladder
+ *
+ * Overlays must sit ABOVE the app chrome, otherwise they render underneath the
+ * navbar. Always use the tier that matches the layer instead of an arbitrary
+ * number, and keep this table in sync when you add a new layer.
+ *
+ *      0 - 40   page & map content, mobile drawer backdrop (30), drawer (40)
+ *      1000     navbar header (components/layout/navbar/AppNavbar.vue)
+ *      2000     map asset-point overlays
+ *      3000     navbar search dropdown
+ *      4000     shared modal overlay (components/ui/Modal.vue)
+ *      4100     teleported dropdown menus
+ *      4200     toasts
+ *      9999     map site modal
+ * ------------------------------------------------------------------------- */
+
+html,
+body,
+#app{
+    width: 100%;
+    height: 100%;
+    margin: 0;
+}
+
+body{
+    font-family: 'Inter', system-ui, sans-serif;
+    background: #f8fafc;
+}
+
+.maplibregl-marker {
+    z-index: 20 !important;
+}
+
+.maplibregl-popup {
+    z-index: 30 !important;
+}
+
+.maplibregl-popup-close-button:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+}
+
+.maplibregl-popup-close-button:focus {
+    outline: none;
+}
+
+.asset-point-marker {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 1px solid #515050;
+    border-radius: 50%;
+    color: #ffffff;
+    box-shadow:
+        0 2px 6px rgba(5, 8, 18, 0.359),
+        0 0 0 1px rgba(78, 24, 24, 0.08);
+    cursor: pointer;
+    transition:
+        box-shadow 0.15s ease;
+}
+
+.asset-point-marker:hover {
+    box-shadow:
+        0 4px 10px rgba(3, 5, 8, 0.105),
+        0 0 0 2px rgba(124, 58, 237, 0.093);
+}
+
+.asset-point-marker__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.15s ease;
+    transform-origin: center;
+}
+
+.asset-point-marker:hover .asset-point-marker__icon {
+    transform: scale(1.12);
+}
+
+.maplibregl-popup-content-wrapper {
+    overflow: hidden;
+}
+
+.maplibregl-popup-content {
+    padding: 16px !important;
+    border-radius: 12px !important;
+    box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.12), 0 8px 10px -6px rgba(15, 23, 42, 0.08) !important;
+    max-width: 300px !important;
+    width: 280px !important;
+    box-sizing: border-box !important;
+}
+
+.maplibregl-popup-tip {
+    border-top-color: #ffffff !important;
+}
+
+.maplibregl-popup-close-button {
+    top: 10px !important;
+    right: 10px !important;
+    width: 28px !important;
+    height: 28px !important;
+    border-radius: 8px !important;
+    font-size: 18px !important;
+}
+
+.cable-selected {
+  animation: cable-flow 0.8s linear infinite;
+}
+
+@keyframes cable-flow {
+  from {
+    stroke-dashoffset: 0;
+  }
+
+  to {
+    stroke-dashoffset: -20;
+  }
+}
