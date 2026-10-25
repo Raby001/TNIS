@@ -31,7 +31,6 @@ import { ManholesModule } from './modules/manholes/manholes.module';
 import { HandholesModule } from './modules/handholes/handholes.module';
 import { PolesModule } from './modules/poles/poles.module';
 import { OccsModule } from './modules/occs/occs.module';
-import { GisModule } from './modules/gis/gis.module';
 import { OpticalSplittersModule } from './modules/optical-splitters/optical-splitters.module';
 import { FiberCoreSplitterConnectionsModule } from './modules/fiber-core-splitter-connections/fiber-core-splitter-connections.module';
 import { LcpsModule } from './modules/lcps/lcps.module';
