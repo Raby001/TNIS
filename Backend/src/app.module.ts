@@ -117,8 +117,6 @@ import { FiberCoreRouterPortConnectionModule } from './modules/fiber-core-router
     FiberCoreRouterPortConnectionModule,
 
     FieldObservationsModule,
-
-    GisModule,
     ReferenceDataModule,
   ],
   controllers: [AppController],
