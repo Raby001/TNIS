@@ -10,7 +10,6 @@ import { FiberSpliceStatus } from '../fiber-splices/entities/fiber-splice-status
 import { InstallationMethod } from '../cables/entities/installation-method.entity';
 import { City } from '../locations/entities/city.entity';
 import { Province } from '../locations/entities/province.entity';
-import { Status } from '../assets/entities/status.entity';
 import { FiberSegmentType } from '../cables/entities/fiber-segment-type.entity';
 import { AccessControlModule } from '../access-control/access-control.module';
 import { SplitterRatio } from '../optical-splitters/entities/splitter-ratio.entity';
@@ -18,6 +17,8 @@ import { FiberCoreSplitterConnectionStatus } from '../fiber-core-splitter-connec
 import { FiberCoreOccPortConnectionStatus } from '../fiber-core-occ-port-connection/entities/fiber-core-occ-port-connection-status.entity';
 import { FiberCoreSpliceClosurePortConnectionStatus } from '../fiber-core-splice-closure-port-connection/entities/fiber-core-splice-closure-port-connection-status.entity';
 import { FiberCoreRouterPortConnectionStatus } from '../fiber-core-router-port-connections/entities/fiber-core-router-port-connection-status.entity';
+import { AssetLifecycleStatus } from '../assets/entities/asset-lifecycle-status.entity';
+import { AssetCondition } from '../assets/entities/asset-condition.entity';
 
 @Module({
   imports: [
@@ -33,7 +34,8 @@ import { FiberCoreRouterPortConnectionStatus } from '../fiber-core-router-port-c
       City,
       Province,
 
-      Status,
+      AssetLifecycleStatus,
+      AssetCondition,
 
       SplitterRatio,
       FiberCoreSplitterConnectionStatus,

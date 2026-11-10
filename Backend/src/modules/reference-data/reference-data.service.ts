@@ -9,13 +9,14 @@ import { FiberSpliceStatus } from '../fiber-splices/entities/fiber-splice-status
 import { InstallationMethod } from '../cables/entities/installation-method.entity';
 import { City } from '../locations/entities/city.entity';
 import { Province } from '../locations/entities/province.entity';
-import { Status } from '../assets/entities/status.entity';
 import { FiberSegmentType } from '../cables/entities/fiber-segment-type.entity';
 import { SplitterRatio } from '../optical-splitters/entities/splitter-ratio.entity';
 import { FiberCoreSplitterConnectionStatus } from '../fiber-core-splitter-connections/entities/fiber-core-splitter-connection-status.entity';
 import { FiberCoreOccPortConnectionStatus } from '../fiber-core-occ-port-connection/entities/fiber-core-occ-port-connection-status.entity';
 import { FiberCoreSpliceClosurePortConnectionStatus } from '../fiber-core-splice-closure-port-connection/entities/fiber-core-splice-closure-port-connection-status.entity';
 import { FiberCoreRouterPortConnectionStatus } from '../fiber-core-router-port-connections/entities/fiber-core-router-port-connection-status.entity';
+import { AssetLifecycleStatus } from 'src/modules/assets/entities/asset-lifecycle-status.entity';
+import { AssetCondition } from 'src/modules/assets/entities/asset-condition.entity';
 
 @Injectable()
 export class ReferenceDataService {
@@ -45,9 +46,6 @@ export class ReferenceDataService {
     @InjectRepository(Province)
     private readonly provinceRepository: Repository<Province>,
 
-    @InjectRepository(Status)
-    private readonly statusRepository: Repository<Status>,
-
     @InjectRepository(FiberSegmentType)
     private readonly FiberSegmentTypeRepository: Repository<FiberSegmentType>,
 
@@ -64,7 +62,13 @@ export class ReferenceDataService {
     private readonly fiberCoreSpliceClosurePortConnectionStatusRepository: Repository<FiberCoreSpliceClosurePortConnectionStatus>,
 
     @InjectRepository(FiberCoreRouterPortConnectionStatus)
-    private readonly fiberCoreRouterPortConnectionStatusRepository: Repository<FiberCoreRouterPortConnectionStatus>
+    private readonly fiberCoreRouterPortConnectionStatusRepository: Repository<FiberCoreRouterPortConnectionStatus>,
+  
+    @InjectRepository(AssetLifecycleStatus)
+    private readonly lifecycleStatusRepository: Repository<AssetLifecycleStatus>,
+
+    @InjectRepository(AssetCondition)
+    private readonly assetConditionRepository: Repository<AssetCondition>,  
   ) {}
 
   // ==========================================
@@ -160,23 +164,17 @@ export class ReferenceDataService {
 
   async findProvinces() {
     return this.provinceRepository.find({
+      select: {
+        id: true,
+        name: true,
+        code: true,
+      },
       order: {
         name: 'ASC',
       },
     });
   }
 
-  // ==========================================
-  // Asset Statuses
-  // ==========================================
-
-  async findStatuses() {
-    return this.statusRepository.find({
-      order: {
-        name: 'ASC',
-      },
-    });
-  }
 
   // ==========================================
   // Fiber Segment type
@@ -250,5 +248,22 @@ export class ReferenceDataService {
       },
     });
   }
+
+  async findAssetLifecycleStatuses() {
+    return this.lifecycleStatusRepository.find({
+      order: {
+        name: 'ASC',
+      },
+    });
+  }
+
+  async findAssetConditions() {
+    return this.assetConditionRepository.find({
+      order: {
+        name: 'ASC',
+      },
+    });
+  }
+
 
 }

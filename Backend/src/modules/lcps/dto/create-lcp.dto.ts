@@ -24,12 +24,35 @@ export class CreateLcpDto {
   @IsUUID()
   assetTypeId: string;
 
+  @ApiPropertyOptional({
+    example: 'Huawei',
+    description: 'Manufacturer of the ONU.',
+  })
+  @IsOptional()
+  @IsString()
+  manufacturer?: string;
+
+  @ApiPropertyOptional({
+    example: 'EG8145V5',
+    description: 'Model of the ONU.',
+  })
+  @IsOptional()
+  @IsString()
+  model?: string;
+
   @ApiProperty({
-    example: 'uuid-of-status',
-    description: 'Initial status of the LCP.',
+    example: 'uuid-of-lifecycle-status',
+    description: 'ID of the asset lifecycle status.',
   })
   @IsUUID()
-  statusId: string;
+  lifecycleStatusId: string;
+
+  @ApiProperty({
+    example: 'uuid-of-condition',
+    description: 'ID of the asset condition.',
+  })
+  @IsUUID()
+  conditionId: string;
 
   @ApiProperty({
     example: 'site-uuid',

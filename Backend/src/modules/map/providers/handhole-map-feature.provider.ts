@@ -34,8 +34,13 @@ export class HandholeMapFeatureProvider implements MapFeatureProvider {
       )
 
       .leftJoinAndSelect(
-        'asset.status',
-        'status',
+        'asset.lifecycleStatus',
+        'lifecycleStatus',
+      )
+
+      .leftJoinAndSelect(
+        'asset.condition',
+        'condition',
       )
 
       .leftJoinAndSelect(
@@ -107,18 +112,32 @@ export class HandholeMapFeatureProvider implements MapFeatureProvider {
       );
     }
 
-    // ========================================================
-    // Status
-    // ========================================================
+// ========================================================
+// Lifecycle Status
+// ========================================================
 
-    if (query.statusId) {
-      qb.andWhere(
-        'status.id = :statusId',
-        {
-          statusId: query.statusId,
-        },
-      );
-    }
+if (query.lifecycleStatusId) {
+  qb.andWhere(
+    'lifecycleStatus.id = :lifecycleStatusId',
+    {
+      lifecycleStatusId: query.lifecycleStatusId,
+    },
+  );
+}
+
+
+// ========================================================
+// Asset Condition
+// ========================================================
+
+if (query.conditionId) {
+  qb.andWhere(
+    'condition.id = :conditionId',
+    {
+      conditionId: query.conditionId,
+    },
+  );
+}
 
     // ========================================================
     // Limit
@@ -151,9 +170,18 @@ export class HandholeMapFeatureProvider implements MapFeatureProvider {
         serialNumber: handhole.asset.serialNumber,
         description: handhole.asset.description,
 
-        // Status
-        status: handhole.asset.status?.name ?? null,
-        statusId: handhole.asset.status?.id ?? null,
+        // ============================================
+        // Lifecycle Status
+        // ============================================
+
+        lifecycleStatusId: handhole.asset.lifecycleStatus?.id ?? null, 
+        lifecycleStatus: handhole.asset.lifecycleStatus?.name ?? null,
+
+        condition: handhole.asset.condition?.name ?? null,
+        conditionId: handhole.asset.condition?.id ?? null,
+
+        manufacturer: handhole.asset.manufacturer,
+        model: handhole.asset.model,
 
         // Handhole-specific information
         size: handhole.size,

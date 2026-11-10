@@ -34,8 +34,13 @@ export class OccMapFeatureProvider implements MapFeatureProvider{
       )
 
       .leftJoinAndSelect(
-        'asset.status',
-        'status',
+        'asset.lifecycleStatus',
+        'lifecycleStatus',
+      )
+
+      .leftJoinAndSelect(
+        'asset.condition',
+        'condition',
       )
 
       .leftJoinAndSelect(
@@ -119,14 +124,28 @@ export class OccMapFeatureProvider implements MapFeatureProvider{
     }
 
     // ========================================================
-    // Status
+    // Lifecycle Status
     // ========================================================
 
-    if (query.statusId) {
+    if (query.lifecycleStatusId) {
       qb.andWhere(
-        'status.id = :statusId',
+        'lifecycleStatus.id = :lifecycleStatusId',
         {
-          statusId: query.statusId,
+          lifecycleStatusId: query.lifecycleStatusId,
+        },
+      );
+    }
+
+
+    // ========================================================
+    // Asset Condition
+    // ========================================================
+
+    if (query.conditionId) {
+      qb.andWhere(
+        'condition.id = :conditionId',
+        {
+          conditionId: query.conditionId,
         },
       );
     }
@@ -167,10 +186,14 @@ export class OccMapFeatureProvider implements MapFeatureProvider{
 
         assetType: occ.asset.assetType?.name ?? null,
 
-        // Status
-        status: occ.asset.status?.name ?? null,
+        lifecycleStatusId: occ.asset.lifecycleStatus?.id ?? null, 
+        lifecycleStatus: occ.asset.lifecycleStatus?.name ?? null,
 
-        statusId: occ.asset.status?.id ?? null,
+        condition: occ.asset.condition?.name ?? null,
+        conditionId: occ.asset.condition?.id ?? null,
+
+        manufacturer: occ.asset.manufacturer,
+        model: occ.asset.model,
 
         // OCC-specific information
         portCount: occ.portCount ?? null,

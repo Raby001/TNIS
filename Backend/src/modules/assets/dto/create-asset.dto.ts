@@ -19,12 +19,21 @@ export class CreateAssetDto {
   @IsUUID()
   assetTypeId: string;
 
-  @ApiProperty({
-    example: 'uuid-of-status',
-    description: 'ID of the initial status assigned to the asset.',
+  @ApiPropertyOptional({
+    example: 'uuid-of-lifecycle-status',
+    description: 'ID of the lifecycle status assigned to the asset.',
   })
+  @IsOptional()
   @IsUUID()
-  statusId: string;
+  lifecycleStatusId?: string;
+
+  @ApiPropertyOptional({
+    example: 'uuid-of-condition',
+    description: 'ID of the current condition assigned to the asset.',
+  })
+  @IsOptional()
+  @IsUUID()
+  conditionId?: string;
 
   @ApiProperty({
     example: 'site-uuid',
@@ -89,6 +98,22 @@ export class CreateAssetDto {
   @IsOptional()
   @IsDateString()
   warrantyEnd?: string;
+
+  @ApiPropertyOptional({
+    example: 'Huawei',
+    description: 'Manufacturer of the asset.',
+  })
+  @IsOptional()
+  @IsString()
+  manufacturer?: string;
+
+  @ApiPropertyOptional({
+    example: 'MA5800-X7',
+    description: 'Model of the asset.',
+  })
+  @IsOptional()
+  @IsString()
+  model?: string;
 
   @ApiPropertyOptional({
     type: GeometryDto,

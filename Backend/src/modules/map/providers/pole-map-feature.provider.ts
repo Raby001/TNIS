@@ -33,8 +33,13 @@ export class PoleMapFeatureProvider implements MapFeatureProvider {
       )
 
       .leftJoinAndSelect(
-        'asset.status',
-        'status',
+        'asset.lifecycleStatus',
+        'lifecycleStatus',
+      )
+
+      .leftJoinAndSelect(
+        'asset.condition',
+        'condition',
       )
 
       .leftJoinAndSelect(
@@ -102,11 +107,29 @@ export class PoleMapFeatureProvider implements MapFeatureProvider {
       );
     }
 
-    if (query.statusId) {
+    // ========================================================
+    // Lifecycle Status
+    // ========================================================
+
+    if (query.lifecycleStatusId) {
       qb.andWhere(
-        'status.id = :statusId',
+        'lifecycleStatus.id = :lifecycleStatusId',
         {
-          statusId: query.statusId,
+          lifecycleStatusId: query.lifecycleStatusId,
+        },
+      );
+    }
+
+
+    // ========================================================
+    // Asset Condition
+    // ========================================================
+
+    if (query.conditionId) {
+      qb.andWhere(
+        'condition.id = :conditionId',
+        {
+          conditionId: query.conditionId,
         },
       );
     }
@@ -144,8 +167,14 @@ export class PoleMapFeatureProvider implements MapFeatureProvider {
         installationDate: pole.asset.installationDate ?? null,
 
         // Status
-        status: pole.asset.status?.name ?? null,
-        statusId: pole.asset.status?.id ?? null,
+        lifecycleStatusId: pole.asset.lifecycleStatus?.id ?? null, 
+        lifecycleStatus: pole.asset.lifecycleStatus?.name ?? null,
+
+        condition: pole.asset.condition?.name ?? null,
+        conditionId: pole.asset.condition?.id ?? null,
+
+        manufacturer: pole.asset.manufacturer,
+        model: pole.asset.model,
 
         // Pole-specific information
         heightM: pole.heightM,

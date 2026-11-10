@@ -40,8 +40,13 @@ export class OnuMapFeatureProvider implements MapFeatureProvider {
       )
 
       .leftJoinAndSelect(
-        'asset.status',
-        'status',
+        'asset.lifecycleStatus',
+        'lifecycleStatus',
+      )
+
+      .leftJoinAndSelect(
+        'asset.condition',
+        'condition',
       )
 
       .leftJoinAndSelect(
@@ -122,14 +127,28 @@ export class OnuMapFeatureProvider implements MapFeatureProvider {
     }
 
     // ========================================================
-    // Status
+    // Lifecycle Status
     // ========================================================
 
-    if (query.statusId) {
+    if (query.lifecycleStatusId) {
       qb.andWhere(
-        'status.id = :statusId',
+        'lifecycleStatus.id = :lifecycleStatusId',
         {
-          statusId: query.statusId,
+          lifecycleStatusId: query.lifecycleStatusId,
+        },
+      );
+    }
+
+
+    // ========================================================
+    // Asset Condition
+    // ========================================================
+
+    if (query.conditionId) {
+      qb.andWhere(
+        'condition.id = :conditionId',
+        {
+          conditionId: query.conditionId,
         },
       );
     }
@@ -186,9 +205,14 @@ export class OnuMapFeatureProvider implements MapFeatureProvider {
 
         description: onu.asset.description,
 
-        status: onu.asset.status?.name ?? null,
+        lifecycleStatusId: onu.asset.lifecycleStatus?.id ?? null, 
+        lifecycleStatus: onu.asset.lifecycleStatus?.name ?? null,
 
-        statusId: onu.asset.status?.id ?? null,
+        condition: onu.asset.condition?.name ?? null,
+        conditionId: onu.asset.condition?.id ?? null,
+
+        manufacturer: onu.asset.manufacturer,
+        model: onu.asset.model,
 
         installationDate: onu.asset.installationDate ?? null,
 

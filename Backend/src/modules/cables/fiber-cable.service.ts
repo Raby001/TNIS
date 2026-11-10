@@ -38,7 +38,6 @@ type ValidatedFiberCableTarget = {
   geometry: PointGeometry,
 };
 
-
 @Injectable()
 export class FiberCablesService {
   constructor(
@@ -509,7 +508,10 @@ export class FiberCablesService {
       installationDate: dto.installationDate,
       warrantyStart: dto.warrantyStart,
       warrantyEnd: dto.warrantyEnd,
-      statusId: dto.statusId,
+      manufacturer: dto.manufacturer,
+      model: dto.model,
+      lifecycleStatusId: dto.lifecycleStatusId,
+      conditionId: dto.conditionId,
     };
 
     await this.assetService.updateInternal(
@@ -1587,7 +1589,10 @@ export class FiberCablesService {
           {
             name: dto.name,
             assetTypeId: dto.assetTypeId,
-            statusId: dto.statusId,
+            manufacturer: dto.manufacturer,
+            model: dto.model,
+            lifecycleStatusId: dto.lifecycleStatusId,
+            conditionId: dto.conditionId,
             siteId: dto.siteId,
             description: dto.description,
             geometry: dto.geometry,
@@ -1832,7 +1837,8 @@ export class FiberCablesService {
         relations: {
           asset: {
             assetType: true,
-            status: true,
+            lifecycleStatus: true,
+            condition: true,
             site: true,
             createdBy: true,
             updatedBy: true,
@@ -2030,7 +2036,8 @@ export class FiberCablesService {
       relations: {
         asset: {
           assetType: true,
-          status: true,
+          lifecycleStatus: true,
+          condition: true,
         },
         segmentType: true,
         cableType: true,
@@ -2113,7 +2120,8 @@ export class FiberCablesService {
       relations: {
         asset: {
           assetType: true,
-          status: true,
+          lifecycleStatus: true,
+          condition: true,
           site: true,
         },
         cableType: true,
@@ -2348,12 +2356,17 @@ export class FiberCablesService {
             }
           : null,
 
-        status: fiberCable.asset.status
+        AssetLifecycleStatus: fiberCable.asset.lifecycleStatus
           ? {
-              id: fiberCable.asset.status.id,
-              name: fiberCable.asset.status.name,
-            }
-          : null,
+            id: fiberCable.asset.lifecycleStatus.id,
+            name: fiberCable.asset.lifecycleStatus.name,
+          }: null,
+
+        AssetCondition: fiberCable.asset.condition
+          ? {
+            id: fiberCable.asset.condition.id,
+            name: fiberCable.asset.condition.name,
+          }: null,
 
         site: fiberCable.asset.site
           ? {
@@ -2533,7 +2546,8 @@ export class FiberCablesService {
           assetTag: asset.assetTag,
           serialNumber: asset.serialNumber,
           assetType: asset.assetType?.name,
-          status: asset.status?.name,
+          lifeCycleStatus: asset.lifecycleStatus?.name,
+          condition: asset.condition?.name,
           site: asset.site
             ? {
                 id: asset.site.id,
@@ -2651,7 +2665,8 @@ export class FiberCablesService {
           relations: {
             asset: {
               assetType: true,
-              status: true,
+              lifecycleStatus: true,
+              condition: true,
               site: true,
             },
             cableType: true,

@@ -8,7 +8,6 @@ export class AssetQueryDto {
   // =========================
 
   @ApiPropertyOptional({
-    example: 'RTR-PP',
     description:'Search by asset code, name, asset tag, or serial number.',
   })
   @IsOptional()
@@ -20,7 +19,6 @@ export class AssetQueryDto {
   // =========================
 
   @ApiPropertyOptional({
-    example: '0198f2c4-1234-7abc-8def-123456789abc',
     description: 'Filter by asset type UUID.',
   })
   @IsOptional()
@@ -28,15 +26,20 @@ export class AssetQueryDto {
   assetTypeId?: string;
 
   @ApiPropertyOptional({
-    example: '0198f2c4-1234-7abc-8def-123456789abc',
-    description: 'Filter by status UUID.',
+    description: 'Filter by lifecycle status UUID.',
   })
   @IsOptional()
   @IsUUID()
-  statusId?: string;
+  lifecycleStatusId?: string;
 
   @ApiPropertyOptional({
-    example: '0198f2c4-1234-7abc-8def-123456789abc',
+    description: 'Filter by asset condition UUID.',
+  })
+  @IsOptional()
+  @IsUUID()
+  conditionId?: string;
+
+  @ApiPropertyOptional({
     description: 'Filter by site UUID.',
   })
   @IsOptional()
@@ -48,7 +51,6 @@ export class AssetQueryDto {
   // =========================
 
   @ApiPropertyOptional({
-    example: '2026-01-01',
     description: 'Return assets created on or after this date.',
   })
   @IsOptional()
@@ -56,7 +58,6 @@ export class AssetQueryDto {
   createdFrom?: string;
 
   @ApiPropertyOptional({
-    example: '2026-09-01',
     description: 'Return assets created on or before this date.',
   })
   @IsOptional()
@@ -68,7 +69,6 @@ export class AssetQueryDto {
   // =========================
 
   @ApiPropertyOptional({
-    example: 'createdAt',
     default: 'createdAt',
     description: 'Field used to sort the results.',
     enum: [
@@ -98,7 +98,6 @@ export class AssetQueryDto {
     | 'installationDate' = 'createdAt';
 
   @ApiPropertyOptional({
-    example: 'DESC',
     default: 'DESC',
     enum: ['ASC', 'DESC'],
     description: 'Sort direction.',
@@ -112,7 +111,6 @@ export class AssetQueryDto {
   // =========================
 
   @ApiPropertyOptional({
-    example: 1,
     default: 1,
     minimum: 1,
     description: 'Page number.',
@@ -124,7 +122,6 @@ export class AssetQueryDto {
   page: number = 1;
 
   @ApiPropertyOptional({
-    example: 20,
     default: 20,
     minimum: 1,
     maximum: 100,

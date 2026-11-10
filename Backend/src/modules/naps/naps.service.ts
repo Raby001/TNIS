@@ -74,7 +74,10 @@ export class NapsService {
               name: dto.name,
               siteId: dto.siteId,
               assetTypeId: dto.assetTypeId,
-              statusId: dto.statusId,
+              manufacturer: dto.manufacturer,
+              model: dto.model,
+              lifecycleStatusId: dto.lifecycleStatusId,
+              conditionId: dto.conditionId,
               description: dto.description,
               geometry: dto.geometry,
 
@@ -109,7 +112,8 @@ export class NapsService {
             relations: {
               asset: {
                 assetType: true,
-                status: true,
+                lifecycleStatus: true,
+                condition: true,
               },
             },
           });
@@ -136,7 +140,8 @@ export class NapsService {
       relations: {
         asset: {
           assetType: true,
-          status: true,
+          lifecycleStatus: true,
+          condition: true,
         },
       },
 
@@ -188,7 +193,8 @@ export class NapsService {
       relations: {
         asset: {
           assetType: true,
-          status: true,
+          lifecycleStatus: true,
+          condition: true,
           createdBy: true,
           updatedBy: true,
         },
@@ -347,7 +353,10 @@ export class NapsService {
           nap.assetId,
           {
             name: dto.name,
-            statusId: dto.statusId,
+            manufacturer: dto.manufacturer,
+            model: dto.model,
+            lifecycleStatusId: dto.lifecycleStatusId,
+            conditionId: dto.conditionId,
 
             assetTag: dto.assetTag,
             serialNumber: dto.serialNumber,
@@ -390,7 +399,8 @@ export class NapsService {
             relations: {
               asset: {
                 assetType: true,
-                status: true,
+                lifecycleStatus: true,
+                condition: true,
               },
             },
           });

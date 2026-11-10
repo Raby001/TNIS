@@ -159,23 +159,6 @@ export class ReferenceDataController {
     return this.referenceDataService.findProvinces();
   }
 
-  // ==========================================
-  // Statuses
-  // ==========================================
-
-  @Get('statuses')
-  @Permissions('ASSET_READ')
-  @ApiOperation({
-    summary: 'Get asset statuses',
-    description:'Returns all available asset statuses.',
-  })
-  @ApiResponse({
-    status: 200,
-    description:'Asset statuses retrieved successfully.',
-  })
-  findStatuses() {
-    return this.referenceDataService.findStatuses();
-  }
 
   // ==========================================
   // Fiber Segment Types
@@ -292,6 +275,30 @@ export class ReferenceDataController {
   })
   async findFiberCoreRouterPortConnectionStatuses() {
     return this.referenceDataService.findFiberCoreRouterPortConnection();
+  }
+
+  // ==========================================
+  // Asset Lifecycle status
+  // ==========================================
+
+  @Get('asset-lifecycle-statuses')
+  @ApiOperation({
+    summary: 'Get all asset lifecycle statuses',
+  })
+  async findAssetLifecycleStatuses() {
+    return this.referenceDataService.findAssetLifecycleStatuses();
+  }
+
+  // ==========================================
+  // assest condition status
+  // ==========================================
+
+  @Get('asset-conditions')
+  @ApiOperation({
+    summary: 'Get all asset conditions',
+  })
+  async findAssetConditions() {
+    return this.referenceDataService.findAssetConditions();
   }
 
 }
