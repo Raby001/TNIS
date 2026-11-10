@@ -101,8 +101,13 @@ export class FiberCableMapFeatureProvider implements MapFeatureProvider {
       )
 
       .leftJoinAndSelect(
-        'asset.status',
-        'status',
+        'asset.lifecycleStatus',
+        'lifecycleStatus',
+      )
+
+      .leftJoinAndSelect(
+        'asset.condition',
+        'condition',
       )
 
       .leftJoinAndSelect(
@@ -238,14 +243,28 @@ export class FiberCableMapFeatureProvider implements MapFeatureProvider {
     }
 
     // ========================================================
-    // Status
+    // Lifecycle Status
     // ========================================================
 
-    if (query.statusId) {
+    if (query.lifecycleStatusId) {
       qb.andWhere(
-        'status.id = :statusId',
+        'lifecycleStatus.id = :lifecycleStatusId',
         {
-          statusId: query.statusId,
+          lifecycleStatusId: query.lifecycleStatusId,
+        },
+      );
+    }
+
+
+    // ========================================================
+    // Asset Condition
+    // ========================================================
+
+    if (query.conditionId) {
+      qb.andWhere(
+        'condition.id = :conditionId',
+        {
+          conditionId: query.conditionId,
         },
       );
     }
@@ -329,8 +348,14 @@ export class FiberCableMapFeatureProvider implements MapFeatureProvider {
           // Status
           // ============================================
 
-          statusId: fiberCable.asset.status?.id ?? null,
+          lifecycleStatusId: fiberCable.asset.lifecycleStatus?.id ?? null, 
+          lifecycleStatus: fiberCable.asset.lifecycleStatus?.name ?? null,
 
+          condition: fiberCable.asset.condition?.name ?? null,
+          conditionId: fiberCable.asset.condition?.id ?? null,
+          
+          manufacturer: fiberCable.asset.manufacturer,
+          model: fiberCable.asset.model,
           // ============================================
           // Fiber Cable Relationships
           // ============================================

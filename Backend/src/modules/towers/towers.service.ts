@@ -87,7 +87,10 @@ export class TowersService {
               name: dto.name,
               siteId: dto.siteId,
               assetTypeId: dto.assetTypeId,
-              statusId: dto.statusId,
+              manufacturer: dto.manufacturer,
+              model: dto.model,
+              lifecycleStatusId: dto.lifecycleStatusId,
+              conditionId: dto.conditionId,
 
               assetTag: dto.assetTag,
               serialNumber: dto.serialNumber,
@@ -148,7 +151,8 @@ export class TowersService {
             relations: {
               asset: {
                 assetType: true,
-                status: true,
+                lifecycleStatus: true,
+                condition: true,
               },
             },
           });
@@ -174,7 +178,8 @@ export class TowersService {
         relations: {
           asset: {
             assetType: true,
-            status: true,
+            lifecycleStatus: true,
+            condition: true,
           },
         },
         order: {
@@ -200,7 +205,8 @@ export class TowersService {
         relations: {
           asset: {
             assetType: true,
-            status: true,
+            lifecycleStatus: true,
+            condition: true,
             site: true,
             createdBy: true,
             updatedBy: true,
@@ -256,7 +262,10 @@ export class TowersService {
           tower.assetId,
           {
             name: dto.name,
-            statusId: dto.statusId,
+            manufacturer: dto.manufacturer,
+            model: dto.model,
+            lifecycleStatusId: dto.lifecycleStatusId,
+            conditionId: dto.conditionId,
             assetTag: dto.assetTag,
             serialNumber: dto.serialNumber,
 
@@ -340,7 +349,8 @@ export class TowersService {
             relations: {
               asset: {
                 assetType: true,
-                status: true,
+                lifecycleStatus: true,
+                condition: true,
               },
             },
           });

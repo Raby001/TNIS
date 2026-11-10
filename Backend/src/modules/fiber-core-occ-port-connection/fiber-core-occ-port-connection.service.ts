@@ -481,7 +481,8 @@ export class FiberCoreOccPortConnectionService {
               occ: {
                 asset: {
                   assetType: true,
-                  status: true,
+                  lifecycleStatus: true,
+                  condition: true,
                   site: true,
                 },
               },
@@ -593,7 +594,8 @@ export class FiberCoreOccPortConnectionService {
                 occ: {
                   asset: {
                     assetType: true,
-                    status: true,
+                    lifecycleStatus: true,
+                    condition: true,
                     site: true,
                   },
                 },
@@ -635,7 +637,8 @@ export class FiberCoreOccPortConnectionService {
             occ: {
               asset: {
                 assetType: true,
-                status: true,
+                lifecycleStatus: true,
+                condition: true,
                 site: true,
               },
             },
@@ -677,7 +680,8 @@ export class FiberCoreOccPortConnectionService {
             occ: {
               asset: {
                 assetType: true,
-                status: true,
+                lifecycleStatus: true,
+                condition: true,
                 site: true,
               },
             },
@@ -720,7 +724,8 @@ export class FiberCoreOccPortConnectionService {
               occ: {
                 asset: {
                   assetType: true,
-                  status: true,
+                  lifecycleStatus: true,
+                  condition: true,
                   site: true,
                 },
               },

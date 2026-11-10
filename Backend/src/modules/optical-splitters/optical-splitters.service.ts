@@ -262,7 +262,10 @@ export class OpticalSplittersService {
           name: dto.name,
           description: dto.description,
           assetTypeId: dto.assetTypeId,
-          statusId: dto.statusId,
+          manufacturer: dto.manufacturer,
+          model: dto.model,
+          lifecycleStatusId: dto.lifecycleStatusId,
+          conditionId: dto.conditionId,
           siteId: dto.siteId,
           assetTag: dto.assetTag,
           serialNumber: dto.serialNumber,
@@ -348,13 +351,15 @@ export class OpticalSplittersService {
         relations: {
           asset: {
             assetType: true,
-            status: true,
+            lifecycleStatus: true,
+            condition: true,
             site: true,
           },
 
           parentAsset: {
             assetType: true,
-            status: true,
+            lifecycleStatus: true,
+            condition: true,
             site: true,
           },
 
@@ -384,14 +389,16 @@ export class OpticalSplittersService {
         relations: {
           asset: {
             assetType: true,
-            status: true,
+            lifecycleStatus: true,
+            condition: true,
             site: true,
             createdBy: true,
           },
 
           parentAsset: {
             assetType: true,
-            status: true,
+            lifecycleStatus: true,
+            condition: true,
             site: true,
           },
 
@@ -425,7 +432,8 @@ export class OpticalSplittersService {
         relations: {
           asset: {
             assetType: true,
-            status: true,
+            lifecycleStatus: true,
+            condition: true,
             site: true,
             createdBy: true,
             updatedBy: true,
@@ -433,7 +441,8 @@ export class OpticalSplittersService {
 
           parentAsset: {
             assetType: true,
-            status: true,
+            lifecycleStatus: true,
+            condition: true,
             site: true,
           },
 
@@ -477,13 +486,15 @@ export class OpticalSplittersService {
         relations: {
           asset: {
             assetType: true,
-            status: true,
+            lifecycleStatus: true,
+            condition: true,
             site: true,
           },
 
           parentAsset: {
             assetType: true,
-            status: true,
+            lifecycleStatus: true,
+            condition: true,
             site: true,
           },
 
@@ -549,7 +560,10 @@ export class OpticalSplittersService {
           {
             name: dto.name,
             description: dto.description,
-            statusId: dto.statusId,
+            manufacturer: dto.manufacturer,
+            model: dto.model,
+            lifecycleStatusId: dto.lifecycleStatusId,
+            conditionId: dto.conditionId,
             assetTag: dto.assetTag,
             serialNumber: dto.serialNumber,
             purchaseDate: dto.purchaseDate,
@@ -674,13 +688,15 @@ export class OpticalSplittersService {
             relations: {
               asset: {
                 assetType: true,
-                status: true,
+                lifecycleStatus: true,
+                condition: true,
                 site: true,
               },
 
               parentAsset: {
                 assetType: true,
-                status: true,
+                lifecycleStatus: true,
+                condition: true,
                 site: true,
               },
 

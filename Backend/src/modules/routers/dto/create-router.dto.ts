@@ -24,12 +24,35 @@ export class CreateRouterDto {
   @IsUUID()
   assetTypeId: string;
 
+  @ApiPropertyOptional({
+    example: 'Huawei',
+    description: 'Manufacturer of the ONU.',
+  })
+  @IsOptional()
+  @IsString()
+  manufacturer?: string;
+
+  @ApiPropertyOptional({
+    example: 'EG8145V5',
+    description: 'Model of the ONU.',
+  })
+  @IsOptional()
+  @IsString()
+  model?: string;
+
   @ApiProperty({
-    example: 'active-status-uuid',
-    description: 'UUID of the initial asset status.',
+    example: 'uuid-of-lifecycle-status',
+    description: 'ID of the asset lifecycle status.',
   })
   @IsUUID()
-  statusId: string;
+  lifecycleStatusId: string;
+
+  @ApiProperty({
+    example: 'uuid-of-condition',
+    description: 'ID of the asset condition.',
+  })
+  @IsUUID()
+  conditionId: string;
 
   @ApiProperty({
     example: 'site-uuid',

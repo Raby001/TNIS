@@ -13,12 +13,20 @@ export class UpdateAssetDto {
   name?: string;
 
   @ApiPropertyOptional({
-    example: 'uuid-of-status',
-    description: 'New status of the asset.',
+    example: 'uuid-of-lifecycle-status',
+    description: 'Updated lifecycle status of the asset.',
   })
   @IsOptional()
   @IsUUID()
-  statusId?: string;
+  lifecycleStatusId?: string;
+
+  @ApiPropertyOptional({
+    example: 'uuid-of-condition',
+    description: 'Updated condition of the asset.',
+  })
+  @IsOptional()
+  @IsUUID()
+  conditionId?: string;
 
   @ApiPropertyOptional({
     example: 'TAG-002',
@@ -88,5 +96,21 @@ export class UpdateAssetDto {
   @IsOptional()
   @IsDateString()
   warrantyEnd?: string;
+
+  @ApiPropertyOptional({
+    example: 'Huawei',
+    description: 'Updated manufacturer of the asset.',
+  })
+  @IsOptional()
+  @IsString()
+  manufacturer?: string;
+
+  @ApiPropertyOptional({
+    example: 'MA5800-X7',
+    description: 'Updated model of the asset.',
+  })
+  @IsOptional()
+  @IsString()
+  model?: string;
 
 }

@@ -16,6 +16,24 @@ export class LocationsController {
   ) {}
 
   // =======================================================
+  // Get All Provinces
+  // =======================================================
+
+  @Get('provinces')
+  @Permissions('ASSET_READ')
+  @ApiOperation({
+    summary: 'Get all provinces with the whole Coordornate. Use api in reference data if the app do not need geometry',
+    description:'Returns all provinces ordered alphabetically by name.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Provinces retrieved successfully.',
+  })
+  async findProvinces() {
+    return this.locationsService.findProvinces();
+  }
+
+  // =======================================================
   // Cities by Province
   // =======================================================
 

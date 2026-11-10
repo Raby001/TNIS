@@ -20,6 +20,17 @@ export class LocationsService {
   ) {}
 
   // =======================================================
+  // Get all the province with geometry
+  // =======================================================
+  async findProvinces() {
+    return this.provinceRepository.find({
+      order: {
+        name: 'ASC',
+      },
+    });
+  }
+
+  // =======================================================
   // Cities by Province
   // =======================================================
 

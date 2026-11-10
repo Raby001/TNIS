@@ -172,7 +172,10 @@ export class RoutersService {
 
           assetTypeId: dto.assetTypeId,
 
-          statusId: dto.statusId,
+          manufacturer: dto.manufacturer,
+          model: dto.model,
+          lifecycleStatusId: dto.lifecycleStatusId,
+          conditionId: dto.conditionId,
 
           assetTag: dto.assetTag,
 
@@ -252,7 +255,8 @@ export class RoutersService {
         relations: {
           asset: {
             assetType: true,
-            status: true,
+            lifecycleStatus: true,
+            condition: true,
             site: true,
           },
           rack: {
@@ -283,7 +287,8 @@ export class RoutersService {
         relations: {
           asset: {
             assetType: true,
-            status: true,
+            lifecycleStatus: true,
+            condition: true,
             site: true,
           },
           rack: {
@@ -317,7 +322,8 @@ export class RoutersService {
         relations: {
           asset: {
             assetType: true,
-            status: true,
+            lifecycleStatus: true,
+            condition: true,
             site: true,
           },
           rack: {
@@ -356,7 +362,8 @@ export class RoutersService {
         relations: {
           asset: {
             assetType: true,
-            status: true,
+            lifecycleStatus: true,
+            condition: true,
             site: true,
             createdBy: true,
             updatedBy: true,
@@ -504,7 +511,10 @@ export class RoutersService {
           router.assetId,
           {
             name: dto.name,
-            statusId: dto.statusId,
+            manufacturer: dto.manufacturer,
+            model: dto.model,
+            lifecycleStatusId: dto.lifecycleStatusId,
+            conditionId: dto.conditionId,
             assetTag: dto.assetTag,
             serialNumber: dto.serialNumber,
             description: dto.description,
@@ -529,7 +539,8 @@ export class RoutersService {
             relations: {
               asset: {
                 assetType: true,
-                status: true,
+                lifecycleStatus: true,
+                condition: true,
                 site: true,
               },
               rack: {

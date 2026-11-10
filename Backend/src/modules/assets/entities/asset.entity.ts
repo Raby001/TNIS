@@ -1,9 +1,10 @@
 import { User } from "src/modules/users/entities/user.entity";
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { AssetType } from "./asset-type.entity";
-import { Status } from "./status.entity";
 import { Geometry } from "src/common/types/geometry.type";
 import { Site } from "src/modules/sites/entities/site.entity";
+import { AssetLifecycleStatus } from "./asset-lifecycle-status.entity";
+import { AssetCondition } from "./asset-condition.entity";
 
 @Entity('assets')
 export class Asset {
@@ -48,6 +49,20 @@ export class Asset {
     nullable: true,
   })
   serialNumber: string | null;
+
+  @Column({
+    type: 'varchar',
+    length: 100,
+    nullable: true,
+  })
+  manufacturer: string | null;
+
+  @Column({
+    type: 'varchar',
+    length: 100,
+    nullable: true,
+  })
+  model: string | null;
 
   // date
   @Column({
@@ -168,30 +183,49 @@ export class Asset {
   )
   assetType: AssetType;
 
-
   // =========================================================
-  // With asset Status
+  // With Asset Lifecycle Status
   // =========================================================
-
 
   @Column({
-    name: 'status_id',
+    name: 'lifecycle_status_id',
     type: 'uuid',
+    nullable: true,
   })
-  statusId: string;
+  lifecycleStatusId: string | null;
 
   @ManyToOne(
-    () => Status,
+    () => AssetLifecycleStatus,
     {
-      nullable: false,
-    }
+      nullable: true,
+    },
   )
-  @JoinColumn(
+  @JoinColumn({
+    name: 'lifecycle_status_id',
+  })
+  lifecycleStatus: AssetLifecycleStatus | null;
+
+  // =========================================================
+  // With Asset Condition
+  // =========================================================
+
+  @Column({
+    name: 'condition_id',
+    type: 'uuid',
+    nullable: true,
+  })
+  conditionId: string | null;
+
+  @ManyToOne(
+    () => AssetCondition,
     {
-      name: 'status_id',
-    }
+      nullable: true,
+    },
   )
-  status: Status;
+  @JoinColumn({
+    name: 'condition_id',
+  })
+  condition: AssetCondition | null;
 
   @Column({
     type: 'geometry',

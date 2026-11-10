@@ -32,8 +32,12 @@ export class TowerMapFeatureProvider
         'assetType',
       )
       .leftJoinAndSelect(
-        'asset.status',
-        'status',
+        'asset.lifecycleStatus',
+        'lifecycleStatus',
+      )
+      .leftJoinAndSelect(
+        'asset.condition',
+        'condition',
       )
       .leftJoinAndSelect(
         'asset.site',
@@ -94,12 +98,29 @@ export class TowerMapFeatureProvider
       );
     }
 
-    // Status
-    if (query.statusId) {
+    // ========================================================
+    // Lifecycle Status
+    // ========================================================
+
+    if (query.lifecycleStatusId) {
       qb.andWhere(
-        'status.id = :statusId',
+        'lifecycleStatus.id = :lifecycleStatusId',
         {
-          statusId: query.statusId,
+          lifecycleStatusId: query.lifecycleStatusId,
+        },
+      );
+    }
+
+
+    // ========================================================
+    // Asset Condition
+    // ========================================================
+
+    if (query.conditionId) {
+      qb.andWhere(
+        'condition.id = :conditionId',
+        {
+          conditionId: query.conditionId,
         },
       );
     }
@@ -129,9 +150,14 @@ export class TowerMapFeatureProvider
 
         serialNumber: tower.asset.serialNumber,
 
-        status: tower.asset.status?.name ?? null,
+        lifecycleStatusId: tower.asset.lifecycleStatus?.id ?? null, 
+        lifecycleStatus: tower.asset.lifecycleStatus?.name ?? null,
 
-        statusId: tower.asset.status?.id ?? null,
+        condition: tower.asset.condition?.name ?? null,
+        conditionId: tower.asset.condition?.id ?? null,
+
+        manufacturer: tower.asset.manufacturer,
+        model: tower.asset.model,
 
         assetType: tower.asset.assetType?.name ?? null,
 

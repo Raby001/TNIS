@@ -84,7 +84,8 @@ export class FieldObservationsService {
         updatedBy: true,
         convertedAsset: {
           assetType: true,
-          status: true,
+          lifecycleStatus: true,
+          condition: true,
           site: true,
         },
       },

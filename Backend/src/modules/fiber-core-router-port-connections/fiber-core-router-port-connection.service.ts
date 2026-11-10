@@ -405,7 +405,8 @@ export class FiberCoreRouterPortConnectionService {
             router: {
               asset: {
                 assetType: true,
-                status: true,
+                lifecycleStatus: true,
+                condition: true,
                 site: true,
               },
             },
