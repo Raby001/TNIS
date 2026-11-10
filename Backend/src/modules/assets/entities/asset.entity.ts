@@ -127,20 +127,21 @@ export class Asset {
   @Column({
     name: 'site_id',
     type: 'uuid',
+    nullable: true,
   })
-  siteId: string;
+  siteId: string | null;
 
   @ManyToOne(
     () => Site,
     {
-      nullable: false,
+      nullable: true,
       onDelete: 'RESTRICT',
     },
   )
   @JoinColumn({
     name: 'site_id',
   })
-  site: Site;
+  site: Site | null;
 
 
   // =========================================================

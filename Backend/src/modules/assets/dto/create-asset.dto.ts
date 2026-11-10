@@ -30,8 +30,9 @@ export class CreateAssetDto {
     example: 'site-uuid',
     description: 'UUID of the Site where the asset is located.',
   })
+  @IsOptional()
   @IsUUID()
-  siteId: string;
+  siteId?: string;
 
   @ApiPropertyOptional({
     example: 'TAG-001',

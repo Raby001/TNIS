@@ -32,8 +32,9 @@ export class CreateOnuDto {
     example: 'uuid',
     description: 'Site ID where the ONU is installed.',
   })
+  @IsOptional()
   @IsUUID()
-  siteId: string;
+  siteId?: string;
 
   @ApiPropertyOptional({
     example: 'TAG-ONU-001',

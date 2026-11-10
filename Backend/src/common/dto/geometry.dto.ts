@@ -100,6 +100,54 @@ export class ValidGeometryCoordinates implements ValidatorConstraintInterface {
         },
       );
     }
+
+  // ==========================================
+  // MultiPolygon [[[[lng, lat], ...]]]
+  // ==========================================
+
+  if (object.type === 'MultiPolygon') {
+    if (coordinates.length < 1) {
+      return false;
+    }
+
+    return coordinates.every(
+      (polygon) =>
+        Array.isArray(polygon) &&
+        polygon.length >= 1 &&
+        polygon.every(
+          (ring) => {
+            if (!Array.isArray(ring) || ring.length < 4) {
+              return false;
+            }
+
+            const validPoints = ring.every(
+              (point) =>
+                Array.isArray(point) &&
+                point.length === 2 &&
+                point.every(
+                  (value) =>
+                    typeof value === 'number' &&
+                    Number.isFinite(value),
+                ),
+            );
+
+            if (!validPoints) {
+              return false;
+            }
+
+            const first = ring[0];
+            const last = ring[ring.length - 1];
+
+            return (
+              first[0] === last[0] &&
+              first[1] === last[1]
+            );
+          },
+        ),
+    );
+  }
+
+
     return false;
   }
 
@@ -112,41 +160,20 @@ export class ValidGeometryCoordinates implements ValidatorConstraintInterface {
 export class GeometryDto {
   @ApiProperty({
     example: 'Point',
-    enum: ['Point', 'LineString', 'Polygon'],
+    enum: ['Point', 'LineString', 'Polygon', 'MultiPolygon'],
     description: 'GeoJSON geometry type.',
   })
-  @IsIn(['Point', 'LineString', 'Polygon'])
+  @IsIn(['Point', 'LineString', 'Polygon', 'MultiPolygon'])
   type: GeometryType;
 
   @ApiProperty({
     description: 'GeoJSON coordinates in [longitude, latitude] order.',
-    examples: {
-      point: {
-        value: [103.523, 10.625],
-      },
-      lineString: {
-        value: [
-          [103.523, 10.625],
-          [103.530, 10.630],
-        ],
-      },
-      polygon: {
-        value: [
-          [
-            [103.523, 10.625],
-            [103.530, 10.625],
-            [103.530, 10.630],
-            [103.523, 10.630],
-            [103.523, 10.625],
-          ],
-        ],
-      },
-    },
   })
   @IsArray()
   @Validate(ValidGeometryCoordinates)
   coordinates:
     | [number, number]
     | [number, number][]
-    | [number, number][][];
+    | [number, number][][]
+    | [number, number][][][];
 }

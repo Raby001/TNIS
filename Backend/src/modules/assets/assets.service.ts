@@ -12,6 +12,7 @@ import { Site } from "../sites/entities/site.entity";
 import { AssetQueryDto } from "./dto/asset-query.dto";
 import { User } from "../users/entities/user.entity";
 import { FiberCableConnection } from "../fiber-cable-connections/entities/fiber-cable-connection.entity";
+import { AssetProvinceService } from "./services/asset-province.service";
 
 @Injectable()
 export class AssetsService {
@@ -35,6 +36,9 @@ export class AssetsService {
     private readonly fiberCableConnectionRepository: Repository<FiberCableConnection>,
 
     private readonly assetCodeService: AssetCodeService,
+
+    private readonly assetProvinceService: AssetProvinceService,
+
   ){}
 
   // ========================================================
@@ -221,28 +225,6 @@ export class AssetsService {
     const assetRepo = manager?.getRepository(Asset) ?? this.assetRepository;
     const assetTypeRepo = manager?.getRepository(AssetType) ?? this.assetTypeRepository;
     const assetStatusRepo = manager?.getRepository(Status) ?? this.statusRepository;
-    const siteRepo = manager?.getRepository(Site) ?? this.siteRepository;
-    // ==================================
-    // Find site
-    // ==================================
-
-    const site = await siteRepo.findOne({
-        where: {
-          id: dto.siteId,
-        },
-        relations: {
-          city: {
-            province: true,
-          }
-        }
-        ,
-      });
-
-    if (!site) {
-      throw new NotFoundException(
-        `Site with ID ${dto.siteId} not found.`,
-      );
-    }
 
     // ==================================
     // Find asset type
@@ -302,14 +284,19 @@ export class AssetsService {
     // generate code
     // ==================================
 
-    const regionCode = site.city.province.code;
+    const assetGeometry = dto.geometry ? toGeometry(dto.geometry): undefined;
 
+    const province = await this.assetProvinceService.resolveProvince(
+      dto.siteId,
+      assetGeometry,
+      manager,
+    );
 
     const code = await this.assetCodeService.generateCode(
-        assetType,
-        regionCode,
-        manager,
-      );
+      assetType,
+      province.code,
+      manager,
+    );
 
     // ==================================
     // Create asset
@@ -319,7 +306,7 @@ export class AssetsService {
       code,
       name: dto.name,
 
-      siteId: dto.siteId,
+      siteId: dto.siteId ?? null,
 
       assetTypeId: dto.assetTypeId,
       assetType,
@@ -337,7 +324,7 @@ export class AssetsService {
 
       warrantyEnd: dto.warrantyEnd ? new Date(dto.warrantyEnd): null,
 
-      geometry: dto.geometry ? toGeometry(dto.geometry) : null,
+      geometry: assetGeometry ?? null,
 
       createdBy: user,
 

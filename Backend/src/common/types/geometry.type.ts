@@ -4,6 +4,8 @@ export type LineStringCoordinates = [number, number][];
 
 export type PolygonCoordinates = [number, number][][];
 
+export type MultiPolygonCoordinates = [number, number][][][];
+
 export interface PointGeometry {
   type: 'Point';
   coordinates: PointCoordinates;
@@ -19,9 +21,15 @@ export interface PolygonGeometry {
   coordinates: PolygonCoordinates;
 }
 
+export interface MultiPolygonGeometry {
+  type: 'MultiPolygon';
+  coordinates: MultiPolygonCoordinates;
+}
+
 export type Geometry =
   | PointGeometry
   | LineStringGeometry
-  | PolygonGeometry;
+  | PolygonGeometry
+  | MultiPolygonGeometry;
 
 export type GeometryType = Geometry['type'];

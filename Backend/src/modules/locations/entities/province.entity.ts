@@ -1,6 +1,5 @@
-import { Geometry } from "src/common/types/geometry.type";
 import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
-
+import { MultiPolygonGeometry } from 'src/common/types/geometry.type';
 @Entity('provinces')
 export class Province {
   @PrimaryGeneratedColumn('uuid')
@@ -22,9 +21,9 @@ export class Province {
 
   @Column({
     type: 'geometry',
-    spatialFeatureType: 'Point',
+    spatialFeatureType: 'MultiPolygon',
     srid: 4326,
     nullable: true,
   })
-  geometry: Geometry | null;
+  geometry: MultiPolygonGeometry | null;
 }

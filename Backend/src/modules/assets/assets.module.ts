@@ -12,6 +12,8 @@ import { Site } from "../sites/entities/site.entity";
 import { AccessControlModule } from "../access-control/access-control.module";
 import { User } from "../users/entities/user.entity";
 import { FiberCableConnection } from "../fiber-cable-connections/entities/fiber-cable-connection.entity";
+import { Province } from "../locations/entities/province.entity";
+import { AssetProvinceService } from "./services/asset-province.service";
 
 @Module({
   imports: [
@@ -21,6 +23,7 @@ import { FiberCableConnection } from "../fiber-cable-connections/entities/fiber-
       Status, 
       AssetCodeSequece, 
       City, 
+      Province,
       Site, 
       User,
       FiberCableConnection,
@@ -28,7 +31,7 @@ import { FiberCableConnection } from "../fiber-cable-connections/entities/fiber-
     AccessControlModule
   ],
   controllers: [AssetsController],
-  providers: [AssetsService, AssetCodeService],
+  providers: [AssetsService, AssetCodeService, AssetProvinceService],
   exports: [AssetsService],
 })
 export class AssetsModule{}
