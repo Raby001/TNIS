@@ -35,8 +35,13 @@ export class NapMapFeatureProvider implements MapFeatureProvider {
       )
 
       .leftJoinAndSelect(
-        'asset.status',
-        'status',
+        'asset.lifecycleStatus',
+        'lifecycleStatus',
+      )
+
+      .leftJoinAndSelect(
+        'asset.condition',
+        'condition',
       )
 
       .leftJoinAndSelect(
@@ -100,13 +105,29 @@ export class NapMapFeatureProvider implements MapFeatureProvider {
     }
 
     // ========================================================
-    // Status
+    // Lifecycle Status
     // ========================================================
 
-    if (query.statusId) {
+    if (query.lifecycleStatusId) {
       qb.andWhere(
-        'status.id = :statusId',
-        { statusId: query.statusId },
+        'lifecycleStatus.id = :lifecycleStatusId',
+        {
+          lifecycleStatusId: query.lifecycleStatusId,
+        },
+      );
+    }
+
+
+    // ========================================================
+    // Asset Condition
+    // ========================================================
+
+    if (query.conditionId) {
+      qb.andWhere(
+        'condition.id = :conditionId',
+        {
+          conditionId: query.conditionId,
+        },
       );
     }
 
@@ -137,11 +158,16 @@ export class NapMapFeatureProvider implements MapFeatureProvider {
 
         serialNumber: nap.asset.serialNumber,
 
-        status: nap.asset.status?.name ?? null,
-
         installationDate: nap.asset.installationDate ?? null,
 
-        statusId: nap.asset.status?.id ?? null,
+        lifecycleStatusId: nap.asset.lifecycleStatus?.id ?? null, 
+        lifecycleStatus: nap.asset.lifecycleStatus?.name ?? null,
+
+        condition: nap.asset.condition?.name ?? null,
+        conditionId: nap.asset.condition?.id ?? null,
+
+        manufacturer: nap.asset.manufacturer,
+        model: nap.asset.model,
 
         description: nap.asset.description,
 

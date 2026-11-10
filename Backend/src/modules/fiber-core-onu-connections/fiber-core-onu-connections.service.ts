@@ -489,7 +489,8 @@ export class FiberCoreOnuConnectionsService {
               onu: {
                 asset: {
                   assetType: true,
-                  status: true,
+                  lifecycleStatus: true,
+                  condition: true,
                   site: true,
                 },
                 customer: true,
@@ -530,7 +531,8 @@ export class FiberCoreOnuConnectionsService {
           onu: {
             asset: {
               assetType: true,
-              status: true,
+              lifecycleStatus: true,
+              condition: true,
               site: true,
             },
             customer: true,
@@ -571,7 +573,8 @@ export class FiberCoreOnuConnectionsService {
             onu: {
               asset: {
                 assetType: true,
-                status: true,
+                lifecycleStatus: true,
+                condition: true,
                 site: true,
               },
               customer: true,

@@ -1,7 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsDateString, IsMACAddress, IsNumber, IsOptional, IsString, IsUUID, MaxLength, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
-import { GeometryDto } from 'src/common/dto/geometry.dto';
 import { CreateCustomerDto } from 'src/modules/customers/dto/create-customer.dto';
 import { PointGeometryDto } from 'src/common/dto/point-geometry.dto';
 
@@ -21,19 +20,45 @@ export class CreateOnuDto {
   @IsUUID()
   assetTypeId: string;
 
-  @ApiProperty({
-    example: 'uuid',
-    description: 'Asset status ID.',
+  @ApiPropertyOptional({
+    example: 'Huawei',
+    description: 'Manufacturer of the ONU.',
   })
-  @IsUUID()
-  statusId: string;
+  @IsOptional()
+  @IsString()
+  manufacturer?: string;
+
+  @ApiPropertyOptional({
+    example: 'EG8145V5',
+    description: 'Model of the ONU.',
+  })
+  @IsOptional()
+  @IsString()
+  model?: string;
 
   @ApiProperty({
     example: 'uuid',
     description: 'Site ID where the ONU is installed.',
   })
+  @IsOptional()
   @IsUUID()
-  siteId: string;
+  siteId?: string;
+
+  @ApiPropertyOptional({
+    example: 'uuid-of-lifecycle-status',
+    description: 'ID of the lifecycle status assigned to the asset.',
+  })
+  @IsOptional()
+  @IsUUID()
+  lifecycleStatusId?: string;
+
+  @ApiPropertyOptional({
+    example: 'uuid-of-condition',
+    description: 'ID of the current condition assigned to the asset.',
+  })
+  @IsOptional()
+  @IsUUID()
+  conditionId?: string;
 
   @ApiPropertyOptional({
     example: 'TAG-ONU-001',

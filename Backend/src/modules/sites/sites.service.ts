@@ -208,7 +208,8 @@ async findAllForMap() {
       },
       relations: {
         assetType: true,
-        status: true,
+        lifecycleStatus: true,
+        condition: true,
       },
       order: {
         name: 'ASC',
@@ -236,7 +237,8 @@ async findAllForMap() {
       },
       relations: {
         assetType: true,
-        status: true,
+        lifecycleStatus: true,
+        condition: true,
       },
       order: {
         name: 'ASC',

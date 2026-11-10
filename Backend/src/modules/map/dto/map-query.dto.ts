@@ -44,11 +44,18 @@ export class MapQueryDto {
   siteId?: string;
 
   @ApiPropertyOptional({
-    description: 'Filter asset-based map features by asset status.',
+    description: 'Filter asset-based map features by asset life cycle status.',
   })
   @IsOptional()
   @IsUUID()
-  statusId?: string;
+  lifecycleStatusId?: string;
+
+  @ApiPropertyOptional({
+    description: 'Filter asset-based map features by asset condition.',
+  })
+  @IsOptional()
+  @IsUUID()
+  conditionId?: string;
 
   @ApiPropertyOptional({
     description: 'Maximum number of features returned per layer.',

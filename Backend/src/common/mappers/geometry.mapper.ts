@@ -1,5 +1,11 @@
 import { GeometryDto } from '../dto/geometry.dto';
-import { Geometry, PointGeometry, LineStringGeometry, PolygonGeometry } from '../types/geometry.type';
+import {
+  Geometry,
+  PointGeometry,
+  LineStringGeometry,
+  PolygonGeometry,
+  MultiPolygonGeometry,
+} from '../types/geometry.type';
 
 export function toGeometry(dto: GeometryDto): Geometry {
   if (dto.type === 'Point') {
@@ -19,10 +25,19 @@ export function toGeometry(dto: GeometryDto): Geometry {
 
     return geometry;
   }
-  
-  const geometry: PolygonGeometry = {
-    type: 'Polygon',
-    coordinates: dto.coordinates as [number, number][][],
+
+  if (dto.type === 'Polygon') {
+    const geometry: PolygonGeometry = {
+      type: 'Polygon',
+      coordinates: dto.coordinates as [number, number][][],
+    };
+
+    return geometry;
+  }
+
+  const geometry: MultiPolygonGeometry = {
+    type: 'MultiPolygon',
+    coordinates: dto.coordinates as [number, number][][][],
   };
 
   return geometry;

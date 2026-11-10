@@ -2,7 +2,6 @@ import 'dotenv/config';
 import databaseConfig from 'src/config/database.config';
 import { DataSource } from 'typeorm';
 import { seedAssetTypes } from './asset-type.seed';
-import { seedStatuses } from './status.seed';
 import { seedProvinces } from './province.seed';
 import { seedCities } from './city.seed';
 import { seedCableCoreCount } from './cable-core-count.seed';
@@ -21,6 +20,8 @@ import { seedFiberCoreOnuConnectionStatuses } from './fiber-core-onu-connection-
 import { seedFiberCoreOccPortConnectionStatuses } from './fiber-core-occ-port-connection-statuses.seed';
 import { seedFiberCoreSpliceClosurePortConnectionStatuses } from './fiber-core-splice-closure-port-connection-statuses.seed';
 import { seedFiberCoreRouterPortConnectionStatuses } from './fiber-core-router-port-connection-status';
+import { seedAssetLifecycleStatuses } from './asset-lifecycle-status.seed';
+import { seedAssetConditions } from './asset-condition.seed';
 
 const dataSource = new DataSource({
   type: 'postgres',
@@ -42,7 +43,8 @@ async function runSeed() {
     await seedRoles(dataSource);
 
     await seedAssetTypes(dataSource);
-    await seedStatuses(dataSource);
+    await seedAssetLifecycleStatuses(dataSource);
+    await seedAssetConditions(dataSource);
 
     await seedProvinces(dataSource);
     await seedCities(dataSource);

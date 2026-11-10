@@ -58,7 +58,10 @@ export class SpliceClosuresService {
             {
               name: dto.name,
               assetTypeId: dto.assetTypeId,
-              statusId: dto.statusId,
+              manufacturer: dto.manufacturer,
+              model: dto.model,
+              lifecycleStatusId: dto.lifecycleStatusId,
+              conditionId: dto.conditionId,
               siteId: dto.siteId,
               description: dto.description,
               geometry: dto.geometry,
@@ -113,7 +116,8 @@ export class SpliceClosuresService {
               asset: {
                 site: true,
                 assetType: true,
-                status: true,
+                lifecycleStatus: true,
+                condition: true,
               },
             },
           });
@@ -140,7 +144,8 @@ export class SpliceClosuresService {
       relations: {
         asset: {
           assetType: true,
-          status: true,
+          lifecycleStatus: true,
+          condition: true,
         },
         ports: true,
       },
@@ -159,7 +164,8 @@ export class SpliceClosuresService {
         relations: {
           asset: {
             assetType: true,
-            status: true,
+            lifecycleStatus: true,
+            condition: true,
             site: true,
             createdBy: true,
             updatedBy: true,
@@ -385,7 +391,10 @@ export class SpliceClosuresService {
           id,
           {
             name: dto.name,
-            statusId: dto.statusId,
+            manufacturer: dto.manufacturer,
+            model: dto.model,
+            lifecycleStatusId: dto.lifecycleStatusId,
+            conditionId: dto.conditionId,
             assetTag: dto.assetTag,
             serialNumber: dto.serialNumber,
             description: dto.description,
@@ -431,7 +440,8 @@ export class SpliceClosuresService {
             relations: {
               asset: {
                 assetType: true,
-                status: true,
+                lifecycleStatus: true,
+                condition: true,
               },
             },
             

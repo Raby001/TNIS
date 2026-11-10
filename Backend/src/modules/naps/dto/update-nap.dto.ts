@@ -17,11 +17,36 @@ export class UpdateNapDto {
   name?: string;
 
   @ApiPropertyOptional({
-    example: 'active-status-uuid',
+    example: 'Huawei',
+    description: 'Updated manufacturer of the ONU.',
+  })
+  @IsOptional()
+  @IsString()
+  manufacturer?: string;
+
+  @ApiPropertyOptional({
+    example: 'EG8145V5',
+    description: 'Updated model of the ONU.',
+  })
+  @IsOptional()
+  @IsString()
+  model?: string;
+
+  @ApiPropertyOptional({
+    example: 'uuid-of-lifecycle-status',
+    description: 'Updated asset lifecycle status.',
   })
   @IsOptional()
   @IsUUID()
-  statusId?: string;
+  lifecycleStatusId?: string;
+
+  @ApiPropertyOptional({
+    example: 'uuid-of-condition',
+    description: 'Updated asset condition.',
+  })
+  @IsOptional()
+  @IsUUID()
+  conditionId?: string;
 
   @ApiPropertyOptional({
     example: 'NAP serving residential area.',

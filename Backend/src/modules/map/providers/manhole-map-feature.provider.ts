@@ -33,8 +33,13 @@ export class ManholeMapFeatureProvider implements MapFeatureProvider {
       )
 
       .leftJoinAndSelect(
-        'asset.status',
-        'status',
+        'asset.lifecycleStatus',
+        'lifecycleStatus',
+      )
+
+      .leftJoinAndSelect(
+        'asset.condition',
+        'condition',
       )
 
       .leftJoinAndSelect(
@@ -106,14 +111,28 @@ export class ManholeMapFeatureProvider implements MapFeatureProvider {
     }
 
     // ========================================================
-    // Status
+    // Lifecycle Status
     // ========================================================
 
-    if (query.statusId) {
+    if (query.lifecycleStatusId) {
       qb.andWhere(
-        'status.id = :statusId',
+        'lifecycleStatus.id = :lifecycleStatusId',
         {
-          statusId: query.statusId,
+          lifecycleStatusId: query.lifecycleStatusId,
+        },
+      );
+    }
+
+
+    // ========================================================
+    // Asset Condition
+    // ========================================================
+
+    if (query.conditionId) {
+      qb.andWhere(
+        'condition.id = :conditionId',
+        {
+          conditionId: query.conditionId,
         },
       );
     }
@@ -150,9 +169,14 @@ export class ManholeMapFeatureProvider implements MapFeatureProvider {
         description: manhole.asset.description,
         installationDate: manhole.asset.installationDate ?? null,
 
-        // Status
-        status: manhole.asset.status?.name ?? null,
-        statusId: manhole.asset.status?.id ?? null,
+        lifecycleStatusId: manhole.asset.lifecycleStatus?.id ?? null, 
+        lifecycleStatus: manhole.asset.lifecycleStatus?.name ?? null,
+
+        condition: manhole.asset.condition?.name ?? null,
+        conditionId: manhole.asset.condition?.id ?? null,
+
+        manufacturer: manhole.asset.manufacturer,
+        model: manhole.asset.model,
 
         // Manhole-specific information
         depthM: manhole.depthM,

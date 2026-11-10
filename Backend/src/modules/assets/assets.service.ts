@@ -2,16 +2,17 @@ import { EntityManager, Repository } from "typeorm";
 import { Asset } from "./entities/asset.entity";
 import { InjectRepository } from "@nestjs/typeorm";
 import { AssetType } from "./entities/asset-type.entity";
-import { Status } from "./entities/status.entity";
 import { ConflictException, Injectable, NotFoundException } from "@nestjs/common";
 import { CreateAssetDto } from "./dto/create-asset.dto";
 import { AssetCodeService } from "./services/asset-code.service";
 import { UpdateAssetDto } from "./dto/update-asset.dto";
 import { toGeometry } from "src/common/mappers/geometry.mapper";
-import { Site } from "../sites/entities/site.entity";
 import { AssetQueryDto } from "./dto/asset-query.dto";
 import { User } from "../users/entities/user.entity";
 import { FiberCableConnection } from "../fiber-cable-connections/entities/fiber-cable-connection.entity";
+import { AssetProvinceService } from "./services/asset-province.service";
+import { AssetLifecycleStatus } from './entities/asset-lifecycle-status.entity';
+import { AssetCondition } from './entities/asset-condition.entity';
 
 @Injectable()
 export class AssetsService {
@@ -22,19 +23,19 @@ export class AssetsService {
     @InjectRepository(AssetType)
     private readonly assetTypeRepository: Repository<AssetType>,
 
-    @InjectRepository(Status)
-    private readonly statusRepository: Repository<Status>,
-
-    @InjectRepository(Site)
-    private readonly siteRepository: Repository<Site>,
-
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
 
-    @InjectRepository(FiberCableConnection)
-    private readonly fiberCableConnectionRepository: Repository<FiberCableConnection>,
-
     private readonly assetCodeService: AssetCodeService,
+
+    private readonly assetProvinceService: AssetProvinceService,
+
+    @InjectRepository(AssetLifecycleStatus)
+    private readonly lifecycleStatusRepository: Repository<AssetLifecycleStatus>,
+
+    @InjectRepository(AssetCondition)
+    private readonly conditionRepository: Repository<AssetCondition>,
+
   ){}
 
   // ========================================================
@@ -45,8 +46,9 @@ export class AssetsService {
     const {
       search,
       assetTypeId,
-      statusId,
       siteId,
+      lifecycleStatusId,
+      conditionId,
       createdFrom,
       createdTo,
       sortBy = 'createdAt',
@@ -59,6 +61,8 @@ export class AssetsService {
       .createQueryBuilder('asset')
       .leftJoinAndSelect('asset.assetType', 'assetType')
       .leftJoinAndSelect('asset.status', 'status')
+      .leftJoinAndSelect('asset.lifecycleStatus','lifecycleStatus')
+      .leftJoinAndSelect('asset.condition', 'condition')
       .leftJoinAndSelect('asset.site', 'site')
       .leftJoinAndSelect('asset.createdBy', 'createdBy')
       .leftJoinAndSelect('asset.updatedBy', 'updatedBy');
@@ -92,10 +96,17 @@ export class AssetsService {
       );
     }
 
-    if (statusId) {
+    if (lifecycleStatusId) {
       queryBuilder.andWhere(
-        'asset.status_id = :statusId',
-        { statusId },
+        'asset.lifecycle_status_id = :lifecycleStatusId',
+        { lifecycleStatusId },
+      );
+    }
+
+    if (conditionId) {
+      queryBuilder.andWhere(
+        'asset.condition_id = :conditionId',
+        { conditionId },
       );
     }
 
@@ -187,7 +198,8 @@ export class AssetsService {
       },
       relations: {
         assetType: true,
-        status: true,
+        lifecycleStatus: true,
+        condition: true,
         site: true,
         createdBy: true,
         updatedBy: true,
@@ -220,29 +232,8 @@ export class AssetsService {
 
     const assetRepo = manager?.getRepository(Asset) ?? this.assetRepository;
     const assetTypeRepo = manager?.getRepository(AssetType) ?? this.assetTypeRepository;
-    const assetStatusRepo = manager?.getRepository(Status) ?? this.statusRepository;
-    const siteRepo = manager?.getRepository(Site) ?? this.siteRepository;
-    // ==================================
-    // Find site
-    // ==================================
-
-    const site = await siteRepo.findOne({
-        where: {
-          id: dto.siteId,
-        },
-        relations: {
-          city: {
-            province: true,
-          }
-        }
-        ,
-      });
-
-    if (!site) {
-      throw new NotFoundException(
-        `Site with ID ${dto.siteId} not found.`,
-      );
-    }
+    const lifecycleStatusRepo = manager?.getRepository(AssetLifecycleStatus) ??this.lifecycleStatusRepository;
+    const conditionRepo = manager?.getRepository(AssetCondition) ??this.conditionRepository;
 
     // ==================================
     // Find asset type
@@ -261,20 +252,45 @@ export class AssetsService {
     }
 
     // ==================================
-    // Find status of asset
+    // Find lifecycle status
     // ==================================
 
-    const status = await assetStatusRepo.findOne({
-      where: {
-        id: dto.statusId,
-      },
-    });
+    let lifecycleStatus: AssetLifecycleStatus | null = null;
 
-    if (!status) {
-      throw new NotFoundException(
-        `Status with ID ${dto.statusId} not found.`,
-      );
+    if (dto.lifecycleStatusId) {
+      lifecycleStatus = await lifecycleStatusRepo.findOne({
+        where: {
+          id: dto.lifecycleStatusId,
+        },
+      });
+
+      if (!lifecycleStatus) {
+        throw new NotFoundException(
+          `Lifecycle status with ID ${dto.lifecycleStatusId} not found.`,
+        );
+      }
     }
+
+    // ==================================
+    // Find asset condition
+    // ==================================
+
+    let condition: AssetCondition | null = null;
+
+    if (dto.conditionId) {
+      condition = await conditionRepo.findOne({
+        where: {
+          id: dto.conditionId,
+        },
+      });
+
+      if (!condition) {
+        throw new NotFoundException(
+          `Asset condition with ID ${dto.conditionId} not found.`,
+        );
+      }
+    }
+
 
     // ==================================
     // Find the user
@@ -302,14 +318,19 @@ export class AssetsService {
     // generate code
     // ==================================
 
-    const regionCode = site.city.province.code;
+    const assetGeometry = dto.geometry ? toGeometry(dto.geometry): undefined;
 
+    const province = await this.assetProvinceService.resolveProvince(
+      dto.siteId,
+      assetGeometry,
+      manager,
+    );
 
     const code = await this.assetCodeService.generateCode(
-        assetType,
-        regionCode,
-        manager,
-      );
+      assetType,
+      province.code,
+      manager,
+    );
 
     // ==================================
     // Create asset
@@ -319,15 +340,22 @@ export class AssetsService {
       code,
       name: dto.name,
 
-      siteId: dto.siteId,
+      siteId: dto.siteId ?? null,
 
       assetTypeId: dto.assetTypeId,
       assetType,
-      status,
+
+      lifecycleStatusId: lifecycleStatus?.id ?? null,
+      lifecycleStatus,
+
+      conditionId: condition?.id ?? null,
+      condition,
 
       assetTag: dto.assetTag,
       serialNumber: dto.serialNumber,
       description: dto.description,
+      manufacturer: dto.manufacturer ?? null,
+      model: dto.model ?? null,
 
       purchaseDate: dto.purchaseDate ? new Date(dto.purchaseDate) : null,
 
@@ -337,7 +365,7 @@ export class AssetsService {
 
       warrantyEnd: dto.warrantyEnd ? new Date(dto.warrantyEnd): null,
 
-      geometry: dto.geometry ? toGeometry(dto.geometry) : null,
+      geometry: assetGeometry ?? null,
 
       createdBy: user,
 
@@ -382,8 +410,8 @@ export class AssetsService {
   ): Promise<Asset> {
 
     const assetRepo = manager?.getRepository(Asset) ?? this.assetRepository;
-
-    const statusRepo = manager?.getRepository(Status) ?? this.statusRepository;
+    const lifecycleStatusRepo = manager?.getRepository(AssetLifecycleStatus) ?? this.lifecycleStatusRepository;
+    const conditionRepo = manager?.getRepository(AssetCondition) ?? this.conditionRepository;
 
     // ========================================================
     // check whether the id exit or not
@@ -395,7 +423,8 @@ export class AssetsService {
       },
       relations: {
         assetType: true,
-        status: true,
+        lifecycleStatus: true,
+        condition: true,
       },
     });
 
@@ -406,26 +435,47 @@ export class AssetsService {
     }
 
     // ========================================================
-    // check whether status is currently asked for changed
+    // Update lifecycle status
     // ========================================================
 
-    if (dto.statusId !== undefined) {
-
-      const status = await statusRepo.findOne({
+    if (dto.lifecycleStatusId !== undefined) {
+      const lifecycleStatus = await lifecycleStatusRepo.findOne({
         where: {
-          id: dto.statusId,
+          id: dto.lifecycleStatusId,
         },
       });
 
-      if (!status) {
+      if (!lifecycleStatus) {
         throw new NotFoundException(
-          `Status with ID ${dto.statusId} not found.`,
+          `Lifecycle status with ID ${dto.lifecycleStatusId} not found.`,
         );
       }
 
-      asset.status = status;
-      asset.statusId = status.id;
+      asset.lifecycleStatus = lifecycleStatus;
+      asset.lifecycleStatusId = lifecycleStatus.id;
     }
+
+    // ========================================================
+    // Update asset condition
+    // ========================================================
+
+    if (dto.conditionId !== undefined) {
+      const condition = await conditionRepo.findOne({
+        where: {
+          id: dto.conditionId,
+        },
+      });
+
+      if (!condition) {
+        throw new NotFoundException(
+          `Asset condition with ID ${dto.conditionId} not found.`,
+        );
+      }
+
+      asset.condition = condition;
+      asset.conditionId = condition.id;
+    }
+
 
     if (dto.geometry !== undefined) {
       asset.geometry = dto.geometry ? toGeometry(dto.geometry) : null;
@@ -445,6 +495,14 @@ export class AssetsService {
 
     if (dto.description !== undefined) {
       asset.description = dto.description;
+    }
+
+    if (dto.manufacturer !== undefined) {
+      asset.manufacturer = dto.manufacturer;
+    }
+
+    if (dto.model !== undefined) {
+      asset.model = dto.model;
     }
 
     if (dto.purchaseDate !== undefined) {

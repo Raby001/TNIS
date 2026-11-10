@@ -50,7 +50,10 @@ export class ManholesService {
               name: dto.name,
               description: dto.description,
               assetTypeId: dto.assetTypeId,
-              statusId: dto.statusId,
+              manufacturer: dto.manufacturer,
+              model: dto.model,
+              lifecycleStatusId: dto.lifecycleStatusId,
+              conditionId: dto.conditionId,
               siteId: dto.siteId,
               assetTag: dto.assetTag,
               serialNumber: dto.serialNumber,
@@ -82,7 +85,8 @@ export class ManholesService {
       relations: {
         asset: {
           assetType: true,
-          status: true,
+          lifecycleStatus: true,
+          condition: true,
           site: true,
         },
       },
@@ -95,7 +99,8 @@ export class ManholesService {
         relations: {
           asset: {
             assetType: true,
-            status: true,
+            lifecycleStatus: true,
+            condition: true,
             site: true,
             createdBy: true,
             updatedBy: true,
@@ -136,7 +141,10 @@ export class ManholesService {
           {
             name: dto.name,
             description: dto.description,
-            statusId: dto.statusId,
+            manufacturer: dto.manufacturer,
+            model: dto.model,
+            lifecycleStatusId: dto.lifecycleStatusId,
+            conditionId: dto.conditionId,
             assetTag: dto.assetTag,
             serialNumber: dto.serialNumber,
             purchaseDate: dto.purchaseDate,

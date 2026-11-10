@@ -1,7 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsArray, IsDateString, IsOptional, IsString, IsUUID, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
-import { GeometryDto } from 'src/common/dto/geometry.dto';
 import { FiberCableConnectionTargetDto } from 'src/modules/fiber-cable-connections/dto/fiber-cable-connection-target.dto';
 import { FiberCableInstallationSegmentDto } from './fiber-cable-installation-segment.dto';
 import { LineStringGeometryDto } from 'src/common/dto/line-string-geometry.dto';
@@ -25,16 +24,35 @@ export class CreateFiberCableDto {
   @IsUUID()
   assetTypeId: string;
 
-  // ==================================================
-  // With Status
-  // ==================================================
+  @ApiPropertyOptional({
+    example: 'Huawei',
+    description: 'Manufacturer of the ONU.',
+  })
+  @IsOptional()
+  @IsString()
+  manufacturer?: string;
+
+  @ApiPropertyOptional({
+    example: 'EG8145V5',
+    description: 'Model of the ONU.',
+  })
+  @IsOptional()
+  @IsString()
+  model?: string;
 
   @ApiProperty({
-    example: 'f39554f5-9004-4173-8a79-59f8380b304d',
-    description: 'UUID of the asset status.',
+    example: 'uuid-of-lifecycle-status',
+    description: 'ID of the asset lifecycle status.',
   })
   @IsUUID()
-  statusId: string;
+  lifecycleStatusId: string;
+
+  @ApiProperty({
+    example: 'uuid-of-condition',
+    description: 'ID of the asset condition.',
+  })
+  @IsUUID()
+  conditionId: string;
 
 
   // ==================================================

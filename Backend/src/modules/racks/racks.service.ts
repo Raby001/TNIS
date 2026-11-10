@@ -3,12 +3,12 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, EntityManager, Repository } from 'typeorm';
 import { Rack } from './entities/rack.entity';
 import { Building } from '../buildings/entities/building.entity';
-import { Asset } from '../assets/entities/asset.entity';
 import { AssetType } from '../assets/entities/asset-type.entity';
-import { Status } from '../assets/entities/status.entity';
 import { CreateRackDto } from './dto/create-rack.dto';
 import { UpdateRackDto } from './dto/update-rack.dto';
 import { AssetsService } from '../assets/assets.service';
+import { AssetLifecycleStatus } from '../assets/entities/asset-lifecycle-status.entity';
+import { AssetCondition } from '../assets/entities/asset-condition.entity';
 
 @Injectable()
 export class RacksService {
@@ -54,8 +54,9 @@ export class RacksService {
 
         const assetTypeRepo = manager.getRepository(AssetType);
 
-        const statusRepo = manager.getRepository(Status);
+        const assetLifecycleStatus = manager.getRepository(AssetLifecycleStatus);
 
+        const assetCondition = manager.getRepository(AssetCondition);
         // --------------------------------------------------
         // 1. Find Building
         // --------------------------------------------------
@@ -96,18 +97,31 @@ export class RacksService {
         // 3. Find Status
         // --------------------------------------------------
 
-        const status =
-          await statusRepo.findOne({
-            where: {
-              id: dto.statusId,
-            },
-          });
 
-        if (!status) {
+        const assetLifecycleStatuses = await assetLifecycleStatus.findOne({
+          where: {
+            id: dto.lifecycleStatusId,
+          }
+        });
+        
+        if(!assetLifecycleStatuses){
           throw new NotFoundException(
-            `Status with ID ${dto.statusId} not found.`,
+            `Status with ID ${dto.lifecycleStatusId} not found.`,
           );
         }
+
+        const assetConditionStatus = await assetCondition.findOne({
+          where: {
+            id: dto.conditionId,
+          }
+        });
+        
+        if(!assetConditionStatus){
+          throw new NotFoundException(
+            `Status with ID ${dto.conditionId} not found.`,
+          );
+        }
+
 
         // --------------------------------------------------
         // 4. Generate Rack structural code
@@ -147,7 +161,11 @@ export class RacksService {
               description: dto.description,
 
               assetTypeId: dto.assetTypeId,
-              statusId: dto.statusId,
+              manufacturer: dto.manufacturer,
+              model: dto.model,
+
+              lifecycleStatusId: dto.lifecycleStatusId,
+              conditionId: dto.conditionId,
               siteId: building.site.id,
 
               assetTag: dto.assetTag,
@@ -190,7 +208,8 @@ export class RacksService {
             relations: {
               asset: {
                 assetType: true,
-                status: true,
+                lifecycleStatus: true,
+                condition: true,
                 site: true,
               },
               building: {
@@ -220,7 +239,8 @@ export class RacksService {
       relations: {
         asset: {
           assetType: true,
-          status: true,
+          lifecycleStatus: true,
+          condition: true,
           site: true,
         },
         building: {
@@ -250,7 +270,8 @@ export class RacksService {
         relations: {
           asset: {
             assetType: true,
-            status: true,
+            lifecycleStatus: true,
+            condition: true,
             site: true,
             createdBy: true,
             updatedBy: true,
@@ -293,7 +314,8 @@ export class RacksService {
             relations: {
               asset: {
                 assetType: true,
-                status: true,
+                lifecycleStatus: true,
+                condition: true,
               },
               building: {
                 site: true,
@@ -325,7 +347,11 @@ export class RacksService {
             warrantyStart: dto.warrantyStart,
             warrantyEnd: dto.warrantyEnd,
 
-            statusId: dto.statusId,
+            manufacturer: dto.manufacturer,
+            model: dto.model,
+
+            lifecycleStatusId: dto.lifecycleStatusId,
+            conditionId: dto.conditionId,
           },
           userId,
           manager,
@@ -343,7 +369,8 @@ export class RacksService {
             relations: {
               asset: {
                 assetType: true,
-                status: true,
+                lifecycleStatus: true,
+                condition: true,
                 site: true,
               },
               building: {

@@ -37,8 +37,13 @@ export class SpliceClosureMapFeatureProvider implements MapFeatureProvider {
       )
 
       .leftJoinAndSelect(
-        'asset.status',
-        'status',
+        'asset.lifecycleStatus',
+        'lifecycleStatus',
+      )
+
+      .leftJoinAndSelect(
+        'asset.condition',
+        'condition',
       )
 
       .leftJoinAndSelect(
@@ -103,13 +108,29 @@ export class SpliceClosureMapFeatureProvider implements MapFeatureProvider {
     }
 
     // ========================================================
-    // Status
+    // Lifecycle Status
     // ========================================================
 
-    if (query.statusId) {
+    if (query.lifecycleStatusId) {
       qb.andWhere(
-        'status.id = :statusId',
-        { statusId: query.statusId },
+        'lifecycleStatus.id = :lifecycleStatusId',
+        {
+          lifecycleStatusId: query.lifecycleStatusId,
+        },
+      );
+    }
+
+
+    // ========================================================
+    // Asset Condition
+    // ========================================================
+
+    if (query.conditionId) {
+      qb.andWhere(
+        'condition.id = :conditionId',
+        {
+          conditionId: query.conditionId,
+        },
       );
     }
 
@@ -139,9 +160,14 @@ export class SpliceClosureMapFeatureProvider implements MapFeatureProvider {
 
         serialNumber: spliceClosure.asset.serialNumber,
 
-        status: spliceClosure.asset.status?.name ?? null,
+        lifecycleStatusId: spliceClosure.asset.lifecycleStatus?.id ?? null, 
+        lifecycleStatus: spliceClosure.asset.lifecycleStatus?.name ?? null,
 
-        statusId: spliceClosure.asset.status?.id ?? null,
+        condition: spliceClosure.asset.condition?.name ?? null,
+        conditionId: spliceClosure.asset.condition?.id ?? null,
+
+        manufacturer: spliceClosure.asset.manufacturer,
+        model: spliceClosure.asset.model,
 
         closureType: spliceClosure.closureType,
 

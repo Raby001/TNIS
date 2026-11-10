@@ -36,8 +36,13 @@ export class LcpMapFeatureProvider
       )
 
       .leftJoinAndSelect(
-        'asset.status',
-        'status',
+        'asset.lifecycleStatus',
+        'lifecycleStatus',
+      )
+
+      .leftJoinAndSelect(
+        'asset.condition',
+        'condition',
       )
 
       .leftJoinAndSelect(
@@ -122,14 +127,28 @@ export class LcpMapFeatureProvider
 
 
     // ========================================================
-    // Status
+    // Lifecycle Status
     // ========================================================
 
-    if (query.statusId) {
+    if (query.lifecycleStatusId) {
       qb.andWhere(
-        'status.id = :statusId',
+        'lifecycleStatus.id = :lifecycleStatusId',
         {
-          statusId: query.statusId,
+          lifecycleStatusId: query.lifecycleStatusId,
+        },
+      );
+    }
+
+
+    // ========================================================
+    // Asset Condition
+    // ========================================================
+
+    if (query.conditionId) {
+      qb.andWhere(
+        'condition.id = :conditionId',
+        {
+          conditionId: query.conditionId,
         },
       );
     }
@@ -187,11 +206,14 @@ export class LcpMapFeatureProvider
         // ============================================
         // Status
         // ============================================
+        lifecycleStatusId: lcp.asset.lifecycleStatus?.id ?? null, 
+        lifecycleStatus: lcp.asset.lifecycleStatus?.name ?? null,
 
-        statusId: lcp.asset.status?.id ?? null,
+        condition: lcp.asset.condition?.name ?? null,
+        conditionId: lcp.asset.condition?.id ?? null,
 
-        status: lcp.asset.status?.name ?? null,
-
+        manufacturer: lcp.asset.manufacturer,
+        model: lcp.asset.model,
 
         // ============================================
         // LCP Information
