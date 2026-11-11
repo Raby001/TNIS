@@ -183,7 +183,7 @@ export class ReferenceDataService {
   async findFiberSegmentType() {
     return this.FiberSegmentTypeRepository.find({
       order: {
-        name: 'ASC',
+        sortOrder: 'ASC',
       },
     });
   }
