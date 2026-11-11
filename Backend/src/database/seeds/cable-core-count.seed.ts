@@ -62,6 +62,13 @@ export async function seedCableCoreCount (dataSource: DataSource): Promise<void>
       suggestedHex: '#6D4C41',
       confirmRequired: true,
     },
+    {
+      coreCount: 144,
+      displayCode: '144C',
+      suggestedColorName: 'darkpink',
+      suggestedHex: '#bd0da1',
+      confirmRequired: true,
+    },
   ]
 
   for (const ccct of CableCoreCountType) {
