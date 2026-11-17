@@ -16,13 +16,32 @@ export class LocationsController {
   ) {}
 
   // =======================================================
+  // Get All Provinces with geometry
+  // =======================================================
+
+  @Get('provincesgeometry')
+  @Permissions('ASSET_READ')
+  @ApiOperation({
+    summary: 'Get all provinces with the whole Coordinate.',
+    description:'Returns all provinces ordered alphabetically by name.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Provinces retrieved successfully.',
+  })
+  async findProvincesWithGeometry() {
+    return this.locationsService.findProvincesWithGeometry();
+  }
+
+
+  // =======================================================
   // Get All Provinces
   // =======================================================
 
   @Get('provinces')
   @Permissions('ASSET_READ')
   @ApiOperation({
-    summary: 'Get all provinces with the whole Coordornate. Use api in reference data if the app do not need geometry',
+    summary: 'Get all provinces',
     description:'Returns all provinces ordered alphabetically by name.',
   })
   @ApiResponse({
@@ -32,6 +51,7 @@ export class LocationsController {
   async findProvinces() {
     return this.locationsService.findProvinces();
   }
+
 
   // =======================================================
   // Cities by Province

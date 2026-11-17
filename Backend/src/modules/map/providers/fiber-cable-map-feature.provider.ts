@@ -120,10 +120,12 @@ export class FiberCableMapFeatureProvider implements MapFeatureProvider {
         'city',
       )
 
-      .leftJoinAndSelect(
+      .leftJoin(
         'city.province',
         'province',
       )
+
+      .addSelect('province.id')
 
       .leftJoinAndSelect(
         'fiberCable.cableType',
@@ -178,7 +180,7 @@ export class FiberCableMapFeatureProvider implements MapFeatureProvider {
         'toConnection.site',
         'toSite',
       )
-            .leftJoinAndSelect(
+      .leftJoinAndSelect(
         'fiberCable.segmentType',
         'segmentType',
       )

@@ -4,7 +4,6 @@ import { Transform, Type } from 'class-transformer';
 
 export class UserQueryDto {
   @ApiPropertyOptional({
-    example: 'john',
     description: 'Search by username or full name.',
   })
   @IsOptional()
@@ -12,7 +11,6 @@ export class UserQueryDto {
   search?: string;
 
   @ApiPropertyOptional({
-    example: '550e8400-e29b-41d4-a716-446655440000',
     description: 'Filter users by role ID.',
   })
   @IsOptional()
@@ -20,7 +18,6 @@ export class UserQueryDto {
   roleId?: string;
 
   @ApiPropertyOptional({
-    example: '550e8400-e29b-41d4-a716-446655440001',
     description: 'Filter users by province ID.',
   })
   @IsOptional()
@@ -28,7 +25,6 @@ export class UserQueryDto {
   provinceId?: string;
 
   @ApiPropertyOptional({
-    example: true,
     description: 'Filter users by active status.',
   })
   @IsOptional()
@@ -41,7 +37,6 @@ export class UserQueryDto {
   isActive?: boolean;
 
   @ApiPropertyOptional({
-    example: 'createdAt',
     enum: ['username', 'fullName', 'createdAt', 'updatedAt'],
     default: 'createdAt',
     description: 'Field used to sort the results.',
@@ -51,7 +46,6 @@ export class UserQueryDto {
   sortBy?: 'username' | 'fullName' | 'createdAt' | 'updatedAt' = 'createdAt';
 
   @ApiPropertyOptional({
-    example: 'DESC',
     enum: ['ASC', 'DESC'],
     default: 'DESC',
     description: 'Sort direction.',
@@ -61,7 +55,6 @@ export class UserQueryDto {
   sortOrder?: 'ASC' | 'DESC' = 'DESC';
 
   @ApiPropertyOptional({
-    example: 1,
     minimum: 1,
     default: 1,
     description: 'Page number.',
@@ -73,7 +66,6 @@ export class UserQueryDto {
   page?: number = 1;
 
   @ApiPropertyOptional({
-    example: 20,
     minimum: 1,
     maximum: 100,
     default: 20,

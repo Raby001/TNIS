@@ -54,11 +54,12 @@ export class NapMapFeatureProvider implements MapFeatureProvider {
         'city',
       )
 
-      .leftJoinAndSelect(
+      .leftJoin(
         'city.province',
         'province',
       )
-
+      .addSelect('province.id')
+      
       .where('asset.geometry IS NOT NULL');
 
     // ========================================================

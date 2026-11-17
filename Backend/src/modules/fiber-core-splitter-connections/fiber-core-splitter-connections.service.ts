@@ -60,51 +60,31 @@ export class FiberCoreSplitterConnectionsService {
   ): Promise<void> {
 
     // ------------------------------------------------------
-    // Fiber Splice
+    // Splice Closure Port Connection
     // ------------------------------------------------------
 
-    const spliceStatusRepo = manager.getRepository(FiberSpliceStatus);
-
-    const activeSpliceStatus = await spliceStatusRepo.findOne({
+    const spliceClosurePortStatus = await manager
+      .getRepository(FiberCoreSpliceClosurePortConnectionStatus)
+      .findOne({
         where: {
           code: 'ACTIVE',
         },
       });
 
-    if (activeSpliceStatus) {
+    if (spliceClosurePortStatus) {
+      const existingSpliceClosureConnection = await manager
+        .getRepository(FiberCoreSpliceClosurePortConnection)
+        .findOne({
+          where: {
+            fiberCoreId,
+            fiberCoreSide,
+            statusId: spliceClosurePortStatus.id,
+          },
+        });
 
-      const spliceRepo = manager.getRepository(FiberSplice);
-
-      const existingSplice = await spliceRepo
-          .createQueryBuilder('splice')
-          .where(
-            `(
-              (
-                splice.source_core_id = :coreId
-                AND splice.source_core_side = :side
-              )
-              OR
-              (
-                splice.destination_core_id = :coreId
-                AND splice.destination_core_side = :side
-              )
-            )`,
-            {
-              coreId: fiberCoreId,
-              side: fiberCoreSide,
-            },
-          )
-          .andWhere(
-            'splice.status_id = :statusId',
-            {
-              statusId: activeSpliceStatus.id,
-            },
-          )
-          .getOne();
-
-      if (existingSplice) {
+      if (existingSpliceClosureConnection) {
         throw new BadRequestException(
-          `Fiber core ${fiberCoreId} side ${fiberCoreSide} is already connected by a fiber splice.`,
+          `Fiber core ${fiberCoreId} side ${fiberCoreSide} is already connected to a splice closure port.`,
         );
       }
     }

@@ -60,6 +60,14 @@ export class UsersService {
         role: true,
         province: true,
       },
+      select: {
+        province: {
+          id: true,
+          name: true,
+          code: true,
+
+        }
+      }
     });
   }
 
@@ -83,7 +91,12 @@ export class UsersService {
     const queryBuilder = this.userRepository
       .createQueryBuilder('user')
       .leftJoinAndSelect('user.role', 'role')
-      .leftJoinAndSelect('user.province', 'province');
+      .leftJoin('user.province', 'province')
+      .addSelect([
+        'province.id',
+        'province.name',
+        'province.code',
+      ]);
 
     if (search) {
       queryBuilder.andWhere(
@@ -177,6 +190,9 @@ export class UsersService {
 
     const province = await this.provinceRepository.findOne({
       where: { id: provinceId },
+      select: {
+        id: true,
+      }
     });
 
     if (!province) {
@@ -260,6 +276,7 @@ export class UsersService {
     if (provinceId !== undefined) {
       const province = await this.provinceRepository.findOne({
         where: { id: provinceId },
+        select: {id: true}
       });
 
       if (!province) {

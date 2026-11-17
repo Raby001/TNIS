@@ -39,6 +39,7 @@ import { FiberCoreOnuConnectionsModule } from './modules/fiber-core-onu-connecti
 import { FiberCoreOccPortConnectionModule } from './modules/fiber-core-occ-port-connection/fiber-core-occ-port-connection.module';
 import { FiberCoreSpliceClosurePortConnectionsModule } from './modules/fiber-core-splice-closure-port-connection/fiber-core-splice-closure-port-connection.module';
 import { FiberCoreRouterPortConnectionModule } from './modules/fiber-core-router-port-connections/fiber-core-router-port-connection.module';
+import { MapSymbolsModule } from './modules/map-symbols/map-symbols.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -81,6 +82,7 @@ import { FiberCoreRouterPortConnectionModule } from './modules/fiber-core-router
     HeirarchyModule,    
 
     MapModule, 
+    MapSymbolsModule,
 
     CablesModule,
 

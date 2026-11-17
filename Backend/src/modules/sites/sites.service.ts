@@ -10,6 +10,7 @@ import { UpdateSiteDto } from './dto/update-site.dto';
 import { Asset } from '../assets/entities/asset.entity';
 import { SiteQueryDto } from './dto/site-query.dto';
 import { FiberCableConnection } from '../fiber-cable-connections/entities/fiber-cable-connection.entity';
+import { CITY_WITH_PROVINCE_SELECT, SITE_WITH_LOCATION_SELECT } from './constants/province_return.constants';
 
 @Injectable()
 export class SitesService {
@@ -42,7 +43,8 @@ export class SitesService {
       },
       relations: {
         province: true,
-      }
+      },
+      select: CITY_WITH_PROVINCE_SELECT,
     })
 
     if(!city){
@@ -90,6 +92,7 @@ export class SitesService {
           province: true,
         },
       },
+      select: SITE_WITH_LOCATION_SELECT,
     });
 
     if (!site) {
@@ -111,9 +114,25 @@ export class SitesService {
 
     const queryBuilder = this.siteRepository
       .createQueryBuilder('site')
-      .leftJoinAndSelect('site.city', 'city')
-      .leftJoinAndSelect('city.province', 'province');
+      .leftJoin('site.city', 'city')
+      .leftJoin('city.province', 'province')
+      .select([
+        'site.id',
+        'site.code',
+        'site.name',
+        'site.geometry',
+        'site.address',
+        'site.elevation',
+        'site.description',
 
+        'city.id',
+        'city.name',
+        'city.code',
+
+        'province.id',
+        'province.name',
+        'province.code',
+      ]);
     // ==========================================
     // Search
     // ==========================================
@@ -181,13 +200,13 @@ export class SitesService {
     };
   }
 
-async findAllForMap() {
-  return this.siteRepository
-    .createQueryBuilder('site')
-    .leftJoinAndSelect('site.city', 'city')
-    .leftJoinAndSelect('city.province', 'province')
-    .getMany();
-}
+  // async findAllForMap() {
+  //   return this.siteRepository
+  //     .createQueryBuilder('site')
+  //     .leftJoinAndSelect('site.city', 'city')
+  //     .leftJoinAndSelect('city.province', 'province')
+  //     .getMany();
+  // }
 
   async findAssets(siteId: string): Promise<Asset[]> {
     const site = await this.siteRepository.findOne({
@@ -259,7 +278,8 @@ async findAllForMap() {
         city: {
           province: true,
         }
-      }
+      },
+      select: SITE_WITH_LOCATION_SELECT,
     })
 
     if(!site){
