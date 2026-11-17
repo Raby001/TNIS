@@ -612,6 +612,14 @@ export async function seedSites(dataSource: DataSource): Promise<void> {
       relations: {
         province: true,
       },
+      select: {
+        id: true,
+        code: true,
+        province: {
+          id: true,
+          code: true,
+        },
+      },
     });
 
     if (!city) {

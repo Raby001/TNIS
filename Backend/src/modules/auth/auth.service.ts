@@ -286,6 +286,7 @@ export class AuthService {
     if (dto.provinceId !== undefined) {
       const province = await this.provinceRepository.findOne({
         where: { id: dto.provinceId },
+        select: {id: true}
       });
 
       if (!province) {

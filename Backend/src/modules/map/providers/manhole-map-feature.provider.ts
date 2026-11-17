@@ -52,7 +52,7 @@ export class ManholeMapFeatureProvider implements MapFeatureProvider {
         'city',
       )
 
-      .leftJoinAndSelect(
+      .leftJoin(
         'city.province',
         'province',
       )

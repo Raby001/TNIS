@@ -47,10 +47,11 @@ export class TowerMapFeatureProvider
         'site.city',
         'city',
       )
-      .leftJoinAndSelect(
+      .leftJoin(
         'city.province',
         'province',
       )
+      .addSelect('province.id')
       .where('asset.geometry IS NOT NULL');
 
     // Search

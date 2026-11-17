@@ -51,6 +51,18 @@ const permissions = [
     code: 'ASSET_DELETE',
     description: 'Delete assets',
   },
+  {
+    code: 'MAP_SYMBOL_ASSET_TYPE_UPDATE',
+    description: 'Change and reset asset type icons',
+  },
+  {
+    code: 'MAP_SYMBOL_SITE_DEFAULT_UPDATE',
+    description: 'Change the global default site icon',
+  },
+  {
+    code: 'MAP_SYMBOL_SITE_OVERRIDE_UPDATE',
+    description: 'Change and reset individual site icons',
+  },  
 ];
 
 export async function seedPermissions(dataSource: DataSource) {

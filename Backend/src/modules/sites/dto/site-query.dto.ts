@@ -4,7 +4,6 @@ import { Type } from 'class-transformer';
 
 export class SiteQueryDto {
   @ApiPropertyOptional({
-    example: 'Phnom Penh',
     description:
       'Search by site code, name, address, city name, or province name.',
   })
@@ -13,7 +12,6 @@ export class SiteQueryDto {
   search?: string;
 
   @ApiPropertyOptional({
-    example: 'city-uuid',
     description: 'Filter sites by city.',
   })
   @IsOptional()
@@ -21,7 +19,6 @@ export class SiteQueryDto {
   cityId?: string;
 
   @ApiPropertyOptional({
-    example: 1,
     default: 1,
     description: 'Page number.',
   })
@@ -32,7 +29,6 @@ export class SiteQueryDto {
   page?: number = 1;
 
   @ApiPropertyOptional({
-    example: 20,
     default: 20,
     description: 'Number of sites per page.',
   })

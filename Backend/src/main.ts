@@ -3,6 +3,8 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
+import { join } from 'path';
+import * as express from 'express';
 
 async function bootstrap() {
 
@@ -10,7 +12,12 @@ async function bootstrap() {
 
   app.enableCors();
 
-  app.setGlobalPrefix('api/v1');
+  app.use(
+    '/uploads',
+    express.static(join(process.cwd(), 'uploads')),
+  );
+
+  app.setGlobalPrefix('api/v2');
 
   app.useGlobalPipes(new ValidationPipe({
     whitelist: true,

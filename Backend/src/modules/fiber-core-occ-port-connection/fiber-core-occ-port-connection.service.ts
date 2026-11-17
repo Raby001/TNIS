@@ -61,50 +61,31 @@ export class FiberCoreOccPortConnectionService {
   ): Promise<void> {
 
     // ------------------------------------------------------
-    // Fiber Splice
+    // Splice Closure Port Connection
     // ------------------------------------------------------
 
-    const spliceStatus = await manager
-        .getRepository(FiberSpliceStatus)
+    const spliceClosurePortStatus = await manager
+      .getRepository(FiberCoreSpliceClosurePortConnectionStatus)
+      .findOne({
+        where: {
+          code: 'ACTIVE',
+        },
+      });
+
+    if (spliceClosurePortStatus) {
+      const existingSpliceClosureConnection = await manager
+        .getRepository(FiberCoreSpliceClosurePortConnection)
         .findOne({
           where: {
-            code: 'ACTIVE',
+            fiberCoreId,
+            fiberCoreSide,
+            statusId: spliceClosurePortStatus.id,
           },
         });
 
-    if (spliceStatus) {
-
-      const existingSplice = await manager
-          .getRepository(FiberSplice)
-          .createQueryBuilder('splice')
-          .where(
-            `(
-              (
-                splice.source_core_id = :coreId
-                AND splice.source_core_side = :side
-              )
-              OR
-              (
-                splice.destination_core_id = :coreId
-                AND splice.destination_core_side = :side
-              )
-            )`,
-            {
-              coreId: fiberCoreId,
-              side: fiberCoreSide,
-            },
-          )
-          .andWhere(
-            'splice.status_id = :statusId',
-            {
-              statusId: spliceStatus.id,
-            },
-          )
-          .getOne();
-
-      if (existingSplice) {
+      if (existingSpliceClosureConnection) {
         throw new BadRequestException(
-          `Fiber core ${fiberCoreId} side ${fiberCoreSide} is already connected by a fiber splice.`,
+          `Fiber core ${fiberCoreId} side ${fiberCoreSide} is already connected to a splice closure port.`,
         );
       }
     }
