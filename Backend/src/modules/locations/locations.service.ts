@@ -22,13 +22,31 @@ export class LocationsService {
   // =======================================================
   // Get all the province with geometry
   // =======================================================
-  async findProvinces() {
+  async findProvincesWithGeometry() {
     return this.provinceRepository.find({
       order: {
         name: 'ASC',
       },
     });
   }
+
+
+  // =======================================================
+  // Get all the province with geometry
+  // =======================================================
+
+  async findProvinces() {
+    return this.provinceRepository.find({
+      select: {
+        id: true,
+        name: true,
+        code: true,
+      },
+      order: {
+        name: 'ASC',
+      },
+    });
+  }  
 
   // =======================================================
   // Cities by Province
@@ -41,6 +59,9 @@ export class LocationsService {
     const province = await this.provinceRepository.findOne({
         where: {
           id: provinceId,
+        },
+        select: {
+          id: true,
         },
       });
 
@@ -102,6 +123,9 @@ export class LocationsService {
       where: {
         id: provinceId,
       },
+      select: {
+        id: true,
+      }
     });
 
     if (!province) {
@@ -119,6 +143,27 @@ export class LocationsService {
       relations: {
         city: {
           province: true,
+        },
+      },
+      select: {
+        id: true,
+        name: true,
+        code: true,
+        address: true,
+        elevation: true,
+        description: true,
+        geometry: true,
+
+        city: {
+          id: true,
+          name: true,
+          code: true,
+
+          province: {
+            id: true,
+            name: true,
+            code: true,
+          },
         },
       },
       order: {

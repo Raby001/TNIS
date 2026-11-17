@@ -59,6 +59,18 @@ export class AssetProvinceService {
           province: true,
         },
       },
+      select: {
+        id: true,
+        name: true,
+        city: {
+          id: true,
+          province: {
+            id: true,
+            name: true,
+            code: true,
+          },
+        },
+      },
     });
 
     if (!site) {

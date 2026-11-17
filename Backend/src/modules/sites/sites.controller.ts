@@ -119,19 +119,19 @@ export class SitesController {
   }  
 
 
-  @Get('map')
-  @Permissions('ASSET_READ')
-  @ApiOperation({
-    summary: 'Get all sites',
-    description: 'Returns all sites together with their city and province.',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Sites retrieved successfully.',
-  })
-  findAllForMap() {
-    return this.sitesService.findAllForMap();
-  }
+  // @Get('map')
+  // @Permissions('ASSET_READ')
+  // @ApiOperation({
+  //   summary: 'Get all sites',
+  //   description: 'Returns all sites together with their city and province.',
+  // })
+  // @ApiResponse({
+  //   status: 200,
+  //   description: 'Sites retrieved successfully.',
+  // })
+  // findAllForMap() {
+  //   return this.sitesService.findAllForMap();
+  // }
 
   // get site by id
   @Get(':id')

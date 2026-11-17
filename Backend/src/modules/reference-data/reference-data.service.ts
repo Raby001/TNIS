@@ -116,6 +116,16 @@ export class ReferenceDataService {
       relations: {
         province: true,
       },
+      select: {
+        id: true,
+        name: true,
+        code: true,
+        province: {
+          id: true,
+          name: true,
+          code: true,
+        },
+      },
       order: {
         name: 'ASC',
       },

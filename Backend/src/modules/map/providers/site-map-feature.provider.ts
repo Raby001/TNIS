@@ -24,7 +24,8 @@ export class SiteMapFeatureProvider implements MapFeatureProvider {
     const qb = this.siteRepository
       .createQueryBuilder('site')
       .leftJoinAndSelect('site.city', 'city')
-      .leftJoinAndSelect('city.province', 'province')
+      .leftJoin('city.province', 'province')
+      .addSelect('province.id')
       .where('site.geometry IS NOT NULL');
 
     // ========================================================
