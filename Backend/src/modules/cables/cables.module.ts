@@ -14,6 +14,7 @@ import { FiberSegmentType } from './entities/fiber-segment-type.entity';
 import { AccessControlModule } from '../access-control/access-control.module';
 import { FiberCableConnection } from '../fiber-cable-connections/entities/fiber-cable-connection.entity';
 import { FiberCableInstallationSegment } from './entities/fiber-cable-installation-segment.entity';
+import { FiberCableConnectionModule } from '../fiber-cable-connections/fiber-cable-connection.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { FiberCableInstallationSegment } from './entities/fiber-cable-installati
       FiberCableInstallationSegment,
     ]),
     AssetsModule,
+    FiberCableConnectionModule,
     AccessControlModule,
   ],
   providers: [FiberCablesService,],

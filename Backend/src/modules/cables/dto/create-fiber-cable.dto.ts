@@ -63,8 +63,9 @@ export class CreateFiberCableDto {
     example: 'site-uuid',
     description: 'UUID of the Site where the fiber cable belongs.',
   })
+  @IsOptional()
   @IsUUID()
-  siteId: string;
+  siteId?: string;
 
   // ==================================================
   // With Cable

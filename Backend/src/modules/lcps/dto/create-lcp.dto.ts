@@ -59,8 +59,9 @@ export class CreateLcpDto {
     description:
       'UUID of the Site where the LCP is physically located.',
   })
+  @IsOptional()
   @IsUUID()
-  siteId: string;
+  siteId?: string;
 
   @ApiPropertyOptional({
     example: 'LCP-TAG-001',

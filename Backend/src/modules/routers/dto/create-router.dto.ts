@@ -58,8 +58,9 @@ export class CreateRouterDto {
     example: 'site-uuid',
     description: 'UUID of the Site/POP where the router is located.',
   })
+  @IsOptional()
   @IsUUID()
-  siteId: string;
+  siteId?: string;
 
   @ApiPropertyOptional({
     example: 'Core router for Phnom Penh POP.',
