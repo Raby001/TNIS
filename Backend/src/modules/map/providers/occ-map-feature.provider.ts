@@ -174,7 +174,7 @@ export class OccMapFeatureProvider implements MapFeatureProvider{
         // OCC
         assetId: occ.assetId,
         type: 'OCC',
-
+        
         // Common Asset information
         name: occ.asset.name,
         code: occ.asset.code,

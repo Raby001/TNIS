@@ -148,7 +148,7 @@ export class SpliceClosureMapFeatureProvider implements MapFeatureProvider {
 
       properties: {
         assetId: spliceClosure.assetId,
-
+        assetTypeId: spliceClosure.asset.assetType?.id ?? null, 
         type: 'CLOSURE',
 
         name: spliceClosure.asset.name,

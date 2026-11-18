@@ -2,12 +2,15 @@ import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { MAP_FEATURE_PROVIDERS, MAP_FEATURE_TYPES } from './constants/map.constants';
 import { MapFeatureProvider } from './interfaces/map-feature-provider.interface';
 import { MapQueryDto } from './dto/map-query.dto';
+import { MapSymbolsService } from '../map-symbols/map-symbols.service';
 
 @Injectable()
 export class MapService {
   constructor(
     @Inject(MAP_FEATURE_PROVIDERS)
     private readonly providers: MapFeatureProvider[],
+
+    private readonly mapSymbolsService: MapSymbolsService,
   ) {}
 
   // ========================================================
@@ -30,12 +33,81 @@ export class MapService {
         ),
       );
 
+    const features = featureArrays.flat();
+
+    // Load all icon configurations once.
+    const {
+      assetTypeIcons,
+      siteOverrides,
+      defaultSiteIcon,
+    } = await this.mapSymbolsService.getMapIconConfigurations();
+
+    // Build lookup maps.
+    const assetTypeIconMap = new Map(
+      assetTypeIcons.map((item) => [
+        item.assetTypeId,
+        {
+          url: item.iconUrl,
+          mimeType: item.mimeType,
+        },
+      ]),
+    );
+
+    const siteIconOverrideMap = new Map(
+      siteOverrides.map((item) => [
+        item.siteId,
+        {
+          url: item.iconUrl,
+          mimeType: item.mimeType,
+        },
+      ]),
+    );
+
+    const defaultSiteIconData = defaultSiteIcon
+      ? {
+          url: defaultSiteIcon.iconUrl,
+          mimeType: defaultSiteIcon.mimeType,
+        }
+      : null;
+
+    // Attach icons to features.
+    const enrichedFeatures = features.map((feature) => {
+      const properties = feature.properties ?? {};
+
+      // Site icon: individual override first, then global default.
+      if (properties.type === 'SITE') {
+        const icon =
+          siteIconOverrideMap.get(properties.id) ??
+          defaultSiteIconData;
+
+        return {
+          ...feature,
+          properties: {
+            ...properties,
+            icon,
+          },
+        };
+      }
+
+      // Asset icon: use the configured icon for its asset type.
+      const icon = properties.assetTypeId
+        ? assetTypeIconMap.get(properties.assetTypeId) ?? null
+        : null;
+
+      return {
+        ...feature,
+        properties: {
+          ...properties,
+          icon,
+        },
+      };
+    });
+
     return {
       type: 'FeatureCollection',
-
-      features:
-        featureArrays.flat(),
+      features: enrichedFeatures,
     };
+      
   }
 
   // ========================================================
