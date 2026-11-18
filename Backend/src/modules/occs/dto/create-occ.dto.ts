@@ -57,8 +57,9 @@ export class CreateOccDto {
     example: 'site-uuid',
     description: 'UUID of the Site where the OCC is located.',
   })
+  @IsOptional()
   @IsUUID()
-  siteId: string;
+  siteId?: string;
 
   @ApiPropertyOptional({
     example: 'Optical cross-connect point at the telecommunications site.',

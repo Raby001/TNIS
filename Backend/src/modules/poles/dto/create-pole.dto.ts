@@ -52,8 +52,9 @@ export class CreatePoleDto {
     example: 'uuid',
     description: 'Site associated with the pole.',
   })
+  @IsOptional()
   @IsUUID()
-  siteId: string;
+  siteId?: string;
 
   @ApiPropertyOptional({
     example: 12,

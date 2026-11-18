@@ -55,8 +55,9 @@ export class CreateTowerDto {
     example: 'ece77f23-798d-4d60-b488-adcf0ba33cad',
     description: 'Site where the tower is located.',
   })
+  @IsOptional()
   @IsUUID()
-  siteId: string;
+  siteId?: string;
 
   @ApiPropertyOptional({
     example: 'Tower supporting telecom equipment.',

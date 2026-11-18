@@ -52,8 +52,9 @@ export class CreateHandholeDto {
     example: 'uuid',
     description: 'Site associated with the handhole.',
   })
+  @IsOptional()
   @IsUUID()
-  siteId: string;
+  siteId?: string;
 
   @ApiPropertyOptional({
     example: '600x600',
