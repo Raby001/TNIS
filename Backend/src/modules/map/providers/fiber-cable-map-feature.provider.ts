@@ -334,6 +334,8 @@ export class FiberCableMapFeatureProvider implements MapFeatureProvider {
           // ============================================
           assetId: fiberCable.assetId,
 
+          assetTypeId: fiberCable.asset.assetType?.id ?? null,
+
           type: 'FIBER_CABLE',
 
           name: fiberCable.asset.name,

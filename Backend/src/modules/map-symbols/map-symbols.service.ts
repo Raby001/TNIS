@@ -419,4 +419,33 @@ export class MapSymbolsService {
       source: 'DEFAULT',
     };
   }
+
+  async getMapIconConfigurations() {
+    const [
+      assetTypeIcons,
+      siteOverrides,
+      defaultSiteIcon,
+    ] = await Promise.all([
+      this.assetTypeIconRepository.find({
+        relations: {
+          assetType: true,
+        },
+      }),
+
+      this.siteIconOverrideRepository.find(),
+
+      this.siteIconSettingRepository.findOne({
+        where: {
+          settingKey: 'DEFAULT',
+        },
+      }),
+    ]);
+
+    return {
+      assetTypeIcons,
+      siteOverrides,
+      defaultSiteIcon,
+    };
+  }
+
 }

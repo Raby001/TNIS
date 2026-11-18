@@ -158,6 +158,7 @@ export class PoleMapFeatureProvider implements MapFeatureProvider {
         // Pole
         assetId: pole.assetId,
         type: 'POLE',
+        assetTypeId: pole.asset.assetType?.id ?? null, 
 
         // Common Asset information
         name: pole.asset.name,

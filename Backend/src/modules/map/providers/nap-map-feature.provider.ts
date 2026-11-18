@@ -147,6 +147,8 @@ export class NapMapFeatureProvider implements MapFeatureProvider {
 
         assetId: nap.assetId,
 
+        assetTypeId: nap.asset.assetType?.id ?? null, 
+
         type: 'NAP',
 
         name: nap.asset.name,
