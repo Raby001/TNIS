@@ -10,6 +10,7 @@ import { FiberSplice }from '../fiber-splices/entities/fiber-splice.entity';
 import { FiberSpliceStatus }from '../fiber-splices/entities/fiber-splice-status.entity';
 import { FiberCoreStatus }from '../cables/entities/fiber-core-status.entity';
 import { AccessControlModule } from '../access-control/access-control.module';
+import { FiberCoreConnectionModule } from '../fiber-core-connection/fiber-core-connection.module';
 
 @Module({
   imports: [
@@ -18,15 +19,12 @@ import { AccessControlModule } from '../access-control/access-control.module';
       FiberCoreSplitterConnectionStatus,
 
       FiberCore,
-      FiberCoreStatus,
 
       OpticalSplitterPort,
 
-      FiberSplice,
-      FiberSpliceStatus,
-
     ]),
     AccessControlModule,
+    FiberCoreConnectionModule
   ],
 
   controllers: [

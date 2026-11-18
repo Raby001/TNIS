@@ -4,14 +4,10 @@ import { FiberCoreOnuConnection } from './entities/fiber-core-onu-connection.ent
 import { FiberCoreOnuConnectionStatus } from './entities/fiber-core-onu-connection-status.entity';
 import { FiberCoreOnuConnectionsController } from './fiber-core-onu-connections.controller';
 import { FiberCoreOnuConnectionsService } from './fiber-core-onu-connections.service';
-import { Onu } from '../onus/entities/onu.entity';
 import { FiberCore } from '../cables/entities/fiber-core.entity';
-import { FiberSplice } from '../fiber-splices/entities/fiber-splice.entity';
-import { FiberSpliceStatus } from '../fiber-splices/entities/fiber-splice-status.entity';
-import { FiberCoreSplitterConnection } from '../fiber-core-splitter-connections/entities/fiber-core-splitter-connection.entity';
-import { FiberCoreSplitterConnectionStatus } from '../fiber-core-splitter-connections/entities/fiber-core-splitter-connection-status.entity';
-import { FiberCoreStatus } from '../cables/entities/fiber-core-status.entity';
 import { AccessControlModule } from '../access-control/access-control.module';
+import { FiberCoreConnectionModule } from '../fiber-core-connection/fiber-core-connection.module';
+import { Onu } from '../onus/entities/onu.entity';
 
 @Module({
   imports: [
@@ -21,16 +17,9 @@ import { AccessControlModule } from '../access-control/access-control.module';
 
       Onu,
       FiberCore,
-
-      FiberSplice,
-      FiberSpliceStatus,
-
-      FiberCoreSplitterConnection,
-      FiberCoreSplitterConnectionStatus,
-
-      FiberCoreStatus,
     ]),
     AccessControlModule,
+    FiberCoreConnectionModule,
   ],
 
   controllers: [

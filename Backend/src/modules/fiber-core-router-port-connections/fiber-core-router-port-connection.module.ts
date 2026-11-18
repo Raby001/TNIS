@@ -6,6 +6,7 @@ import { RouterPort } from './entities/router-port.entity';
 import { FiberCoreRouterPortConnectionController } from './fiber-core-router-port-connection.controller';
 import { FiberCoreRouterPortConnectionService } from './fiber-core-router-port-connection.service';
 import { AccessControlModule } from '../access-control/access-control.module';
+import { FiberCoreConnectionModule } from '../fiber-core-connection/fiber-core-connection.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { AccessControlModule } from '../access-control/access-control.module';
       RouterPort,
     ]),
     AccessControlModule,
+    FiberCoreConnectionModule,
   ],
 
   controllers: [
