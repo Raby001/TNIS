@@ -52,8 +52,9 @@ export class CreateManholeDto {
     example: 'uuid',
     description: 'Site associated with the manhole.',
   })
+  @IsOptional()
   @IsUUID()
-  siteId: string;
+  siteId?: string;
 
   @ApiPropertyOptional({
     example: 2.5,

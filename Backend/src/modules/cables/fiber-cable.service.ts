@@ -15,11 +15,9 @@ import { NearbyAssetsQueryDto } from './entities/nearby-assets-query.dto';
 import { UpdateFiberCableDto } from './dto/update-fiber-cable.dto';
 import { UpdateAssetDto } from '../assets/dto/update-asset.dto';
 import { FiberCableConnectionTargetDto } from '../fiber-cable-connections/dto/fiber-cable-connection-target.dto';
-import { Site } from '../sites/entities/site.entity';
 import { FiberCoreSpliceClosurePortConnection } from '../fiber-core-splice-closure-port-connection/entities/fiber-core-splice-closure-port-connection.entity';
 import { FiberCableInstallationSegmentDto } from './dto/fiber-cable-installation-segment.dto';
 import { FiberCableInstallationSegment } from './entities/fiber-cable-installation-segment.entity';
-import { PointGeometry } from 'src/common/types/geometry.type';
 import { FiberCoreSplitterConnection } from '../fiber-core-splitter-connections/entities/fiber-core-splitter-connection.entity';
 import { FiberCoreSplitterConnectionStatus } from '../fiber-core-splitter-connections/entities/fiber-core-splitter-connection-status.entity';
 import { FiberCoreOnuConnection } from '../fiber-core-onu-connections/entities/fiber-core-onu-connection.entity';
@@ -29,228 +27,17 @@ import { FiberCoreOccPortConnectionStatus } from '../fiber-core-occ-port-connect
 import { FiberCoreRouterPortConnection } from '../fiber-core-router-port-connections/entities/fiber-core-router-port-connection.entity';
 import { FiberCoreRouterPortConnectionStatus } from '../fiber-core-router-port-connections/entities/fiber-core-router-port-connection-status.entity'; 
 import { FiberCoreSpliceClosurePortConnectionStatus } from '../fiber-core-splice-closure-port-connection/entities/fiber-core-splice-closure-port-connection-status.entity';
-
-type ValidatedFiberCableTarget = {
-  connectionRole: FiberCableConnectionRole;
-  targetType: FiberCableConnectionTargetType;
-  assetId: string | null;
-  siteId: string | null;
-  geometry: PointGeometry,
-};
+import { FiberCableConnectionService } from '../fiber-cable-connections/fiber-cable-connection.service';
+import { ValidatedFiberCableTarget } from '../fiber-cable-connections/types/fiber-cable-connection.types';
 
 @Injectable()
 export class FiberCablesService {
   constructor(
     private readonly assetService: AssetsService,
     private readonly dataSource: DataSource,
+    private readonly fiberCableConnectionService: FiberCableConnectionService,
   ) {}
 
-  // =============================================
-  // Helper Method
-  // =============================================
-
-  private async validateConnectionTarget(
-    manager: EntityManager,
-    target: FiberCableConnectionTargetDto,
-  ){
-    if (target.targetType === FiberCableConnectionTargetType.ASSET) {
-      if (!target.assetId) {
-        throw new BadRequestException(
-          'assetId is required when targetType is ASSET.',
-        );
-      }
-
-      if (target.siteId) {
-        throw new BadRequestException(
-          'siteId must not be provided when targetType is ASSET.',
-        );
-      }
-
-      const asset = await manager.getRepository(Asset).findOne({
-        where: {
-          id: target.assetId,
-        },
-        relations: {
-          assetType: true,
-        },
-      });
-
-      if (!asset) {
-        throw new NotFoundException(
-          `Asset with ID ${target.assetId} not found.`,
-        );
-      }
-
-      if (!asset.geometry || asset.geometry.type !== 'Point') {
-        throw new BadRequestException(
-          `Asset "${asset.name}" must have Point geometry to be used as a fiber cable connection target.`,
-        );
-      }
-
-      return {
-        targetType: FiberCableConnectionTargetType.ASSET,
-        assetId: asset.id,
-        siteId: null,
-        geometry: asset.geometry,
-      };
-    }
-
-    if (target.targetType === FiberCableConnectionTargetType.SITE) {
-      if (!target.siteId) {
-        throw new BadRequestException(
-          'siteId is required when targetType is SITE.',
-        );
-      }
-
-      if (target.assetId) {
-        throw new BadRequestException(
-          'assetId must not be provided when targetType is SITE.',
-        );
-      }
-
-      const site = await manager.getRepository(Site).findOne({
-        where: {
-          id: target.siteId,
-        },
-      });
-
-      if (!site) {
-        throw new NotFoundException(
-          `Site with ID ${target.siteId} not found.`,
-        );
-      }
-
-      if (!site.geometry || site.geometry.type !== 'Point') {
-        throw new BadRequestException(
-          `Site "${site.name}" must have Point geometry to be used as a fiber cable connection target.`,
-        );
-      }
-
-      return {
-        targetType: FiberCableConnectionTargetType.SITE,
-        assetId: null,
-        siteId: site.id,
-        geometry: site.geometry,
-      };
-    }
-
-    throw new BadRequestException(
-      `Unsupported target type: ${target.targetType}.`,
-    );
-  }
-
-  private async validateTargetsAgainstGeometry(
-    manager: EntityManager,
-    geometry: CreateFiberCableDto['geometry'],
-    targets: ValidatedFiberCableTarget[],
-  ): Promise<void> {
-
-    const startTarget = targets[0];
-
-    const endTarget = targets[targets.length - 1];
-
-    // ==========================================
-    // Validate START
-    // ==========================================
-
-    const startMatches = await manager.query(
-      `
-      SELECT ST_Equals(
-        ST_StartPoint(ST_GeomFromGeoJSON($1)),
-        ST_GeomFromGeoJSON($2)
-      ) AS matches
-      `,
-      [
-        JSON.stringify(geometry),
-        JSON.stringify(startTarget.geometry),
-      ],
-    );
-
-    if (!startMatches[0]?.matches) {
-      throw new BadRequestException(
-        'Fiber Cable START target geometry must match the first point of the LineString.',
-      );
-    }
-
-    // ==========================================
-    // Validate END
-    // ==========================================
-
-    const endMatches = await manager.query(
-      `
-      SELECT ST_Equals(
-        ST_EndPoint(ST_GeomFromGeoJSON($1)),
-        ST_GeomFromGeoJSON($2)
-      ) AS matches
-      `,
-      [
-        JSON.stringify(geometry),
-        JSON.stringify(endTarget.geometry),
-      ],
-    );
-
-    if (!endMatches[0]?.matches) {
-      throw new BadRequestException(
-        'Fiber Cable END target geometry must match the last point of the LineString.',
-      );
-    }
-
-    // ==========================================
-    // Validate MIDDLE targets
-    // ==========================================
-
-    const middleTargets = targets.filter(
-      (target) =>
-        target.connectionRole === FiberCableConnectionRole.MIDDLE,
-    );
-
-    if (middleTargets.length === 0) {
-      return;
-    }
-
-    let previousVertexIndex = 1;
-
-    for (const target of middleTargets) {
-      const result = await manager.query(
-        `
-        SELECT MIN(points.path[1]) AS vertex_index
-        FROM ST_DumpPoints(
-          ST_GeomFromGeoJSON($1)
-        ) AS points
-        WHERE ST_Equals(
-          points.geom,
-          ST_GeomFromGeoJSON($2)
-        )
-        `,
-        [
-          JSON.stringify(geometry),
-          JSON.stringify(target.geometry),
-        ],
-      );
-
-      const vertexIndex = result[0]?.vertex_index;
-
-      if (vertexIndex === null || vertexIndex === undefined) {
-        throw new BadRequestException(
-          `Fiber Cable MIDDLE target ${
-            target.assetId
-              ? `asset ${target.assetId}`
-              : `site ${target.siteId}`
-          } does not match any LineString vertex.`,
-        );
-      }
-
-      if (
-        Number(vertexIndex) <= previousVertexIndex || Number(vertexIndex) === geometry.coordinates.length
-      ) {
-        throw new BadRequestException(
-          'Fiber Cable MIDDLE targets must appear in the same order as their sequence along the LineString.',
-        );
-      }
-
-      previousVertexIndex = Number(vertexIndex);
-    }
-  }
 
   private async validateInstallationSegments(
     manager: EntityManager,
@@ -919,7 +706,7 @@ export class FiberCablesService {
 
     for (const routeTarget of orderedTargets) {
       const validated =
-        await this.validateConnectionTarget(
+        await this.fiberCableConnectionService.validateConnectionTarget(
           manager,
           routeTarget.target,
         );
@@ -937,29 +724,15 @@ export class FiberCablesService {
     // Prevent duplicate targets
     // =============================================
 
-    const targetKeys = new Set<string>();
-
-    for (const target of validatedTargets) {
-      const key =
-        target.targetType ===
-        FiberCableConnectionTargetType.ASSET
-          ? `ASSET:${target.assetId}`
-          : `SITE:${target.siteId}`;
-
-      if (targetKeys.has(key)) {
-        throw new BadRequestException(
-          `Target ${key} is used more than once in this Fiber Cable route.`,
-        );
-      }
-
-      targetKeys.add(key);
-    }
+    this.fiberCableConnectionService.validateUniqueTargets(
+      validatedTargets,
+    );
 
     // =============================================
     // Validate target positions
     // =============================================
 
-    await this.validateTargetsAgainstGeometry(
+    await this.fiberCableConnectionService.validateTargetsAgainstGeometry(
       manager,
       dto.geometry,
       validatedTargets,
@@ -970,32 +743,23 @@ export class FiberCablesService {
     // =============================================
 
     const newStart = validatedTargets[0];
-    const newEnd =
-      validatedTargets[validatedTargets.length - 1];
+    const newEnd = validatedTargets[validatedTargets.length - 1];
 
-    existingStart.targetType =
-      newStart.targetType;
+    existingStart.targetType = newStart.targetType;
 
-    existingStart.assetId =
-      newStart.assetId;
+    existingStart.assetId = newStart.assetId;
 
-    existingStart.siteId =
-      newStart.siteId;
+    existingStart.siteId = newStart.siteId;
 
-    existingStart.connectionRole =
-      FiberCableConnectionRole.START;
+    existingStart.connectionRole = FiberCableConnectionRole.START;
 
-    existingEnd.targetType =
-      newEnd.targetType;
+    existingEnd.targetType = newEnd.targetType;
 
-    existingEnd.assetId =
-      newEnd.assetId;
+    existingEnd.assetId = newEnd.assetId;
 
-    existingEnd.siteId =
-      newEnd.siteId;
+    existingEnd.siteId = newEnd.siteId;
 
-    existingEnd.connectionRole =
-      FiberCableConnectionRole.END;
+    existingEnd.connectionRole = FiberCableConnectionRole.END;
 
     // =============================================
     // Remove old MIDDLE connections
@@ -1225,7 +989,7 @@ export class FiberCablesService {
       // Get current START target
       // =============================================
 
-      const currentStartTarget = await this.validateConnectionTarget(manager, {
+      const currentStartTarget = await this.fiberCableConnectionService.validateConnectionTarget(manager, {
           targetType: startConnection.targetType,
           assetId: startConnection.assetId ?? undefined,
           siteId: startConnection.siteId ?? undefined,
@@ -1235,7 +999,7 @@ export class FiberCablesService {
       // Get current END target
       // =============================================
 
-      const currentEndTarget = await this.validateConnectionTarget(manager, {
+      const currentEndTarget = await this.fiberCableConnectionService.validateConnectionTarget(manager, {
           targetType: endConnection.targetType,
           assetId: endConnection.assetId ?? undefined,
           siteId: endConnection.siteId ?? undefined,
@@ -1248,7 +1012,7 @@ export class FiberCablesService {
       const newStartTarget: ValidatedFiberCableTarget = dto.startTarget
           ? {
               connectionRole: FiberCableConnectionRole.START,
-              ...(await this.validateConnectionTarget(
+              ...(await this.fiberCableConnectionService.validateConnectionTarget(
                 manager,
                 dto.startTarget,
               )),
@@ -1265,7 +1029,7 @@ export class FiberCablesService {
       const newEndTarget: ValidatedFiberCableTarget = dto.endTarget
           ? {
               connectionRole: FiberCableConnectionRole.END,
-              ...(await this.validateConnectionTarget(
+              ...(await this.fiberCableConnectionService.validateConnectionTarget(
                 manager,
                 dto.endTarget,
               )),
@@ -1419,7 +1183,6 @@ export class FiberCablesService {
         const fiberCoreStatusRepository = manager.getRepository(FiberCoreStatus);
         const fiberCableRepository = manager.getRepository(FiberCable);
         const fiberCoreRepository = manager.getRepository(FiberCore);
-        const fiberCableConnectionRepository = manager.getRepository(FiberCableConnection);
         const installationSegmentRepository = manager.getRepository(FiberCableInstallationSegment);
 
         // ==========================================
@@ -1503,83 +1266,6 @@ export class FiberCablesService {
           );
         }
 
-        // ==========================================
-        // Validate Fiber Cable Route
-        // ==========================================
-
-        const middleTargets = dto.middleTargets ?? [];
-
-        const orderedTargets = [
-          {
-            target: dto.startTarget,
-            connectionRole: FiberCableConnectionRole.START,
-          },
-
-          ...middleTargets.map((target) => ({
-            target,
-            connectionRole: FiberCableConnectionRole.MIDDLE,
-          })),
-
-          {
-            target: dto.endTarget,
-            connectionRole: FiberCableConnectionRole.END,
-          },
-        ];
-
-        // ==========================================
-        // Validate Each Target
-        // ==========================================
-
-        const validatedTargets: ValidatedFiberCableTarget[] = [];
-
-        for (const routeTarget of orderedTargets) {
-          const validatedTarget = await this.validateConnectionTarget(
-            manager,
-            routeTarget.target,
-          );
-
-          validatedTargets.push({
-            connectionRole: routeTarget.connectionRole,
-
-            targetType: validatedTarget.targetType,
-
-            assetId: validatedTarget.assetId,
-
-            siteId: validatedTarget.siteId,
-
-            geometry: validatedTarget.geometry,
-          });
-        }
-
-        // ==========================================
-        // Prevent Duplicate Targets
-        // ==========================================
-
-        const targetKeys = new Set<string>();
-
-        for (const target of validatedTargets) {
-          const key = target.targetType === FiberCableConnectionTargetType.ASSET
-              ? `ASSET:${target.assetId}`
-              : `SITE:${target.siteId}`;
-
-          if (targetKeys.has(key)) {
-            throw new BadRequestException(
-              `Target ${key} is used more than once in this fiber cable route.`,
-            );
-          }
-
-          targetKeys.add(key);
-        }
-
-        // ==========================================
-        // Validate Targets Against LineString
-        // ==========================================
-
-        await this.validateTargetsAgainstGeometry(
-          manager,
-          dto.geometry,
-          validatedTargets,
-        );
 
         // ==========================================
         // Create Fiber Cable Asset
@@ -1680,26 +1366,16 @@ export class FiberCablesService {
         // Create Ordered Cable Connections
         // ==========================================
 
-        const connections = validatedTargets.map(
-          (target, index) =>
-            fiberCableConnectionRepository.create({
-              fiberCableId: savedFiberCable.assetId,
-
-              targetType: target.targetType,
-
-              assetId: target.assetId,
-
-              siteId: target.siteId,
-
-              connectionRole: target.connectionRole,
-
-              sequence: index,
-            }),
-        );
-
-        await fiberCableConnectionRepository.save(connections);
-
-
+        const connections =
+          await this.fiberCableConnectionService.createCableRouteConnections(
+            savedFiberCable.assetId,
+            dto.geometry,
+            dto.startTarget,
+            dto.middleTargets ?? [],
+            dto.endTarget,
+            manager,
+          );
+          
         // ==========================================
         // Create Installation Method Segments
         // ==========================================

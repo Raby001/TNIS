@@ -54,8 +54,9 @@ export class CreateNapDto {
   @ApiProperty({
     example: 'ece77f23-798d-4d60-b488-adcf0ba33cad',
   })
+  @IsOptional()
   @IsUUID()
-  siteId: string;
+  siteId?: string;
 
   @ApiPropertyOptional({
     example: 'NAP serving residential area.',

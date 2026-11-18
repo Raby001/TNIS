@@ -51,8 +51,9 @@ export class CreateOpticalSplitterDto {
     example: 'site-uuid',
     description: 'Site where the optical splitter is located.',
   })
+  @IsOptional()
   @IsUUID()
-  siteId: string;
+  siteId?: string;
 
   @ApiProperty({
     example: 'Splitter PP-001',

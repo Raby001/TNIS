@@ -4,24 +4,16 @@ import { FiberCoreRouterPortConnection } from './entities/fiber-core-router-port
 import { FiberCoreRouterPortConnectionStatus } from './entities/fiber-core-router-port-connection-status.entity';
 import { RouterPort } from './entities/router-port.entity';
 import { FiberCore } from '../cables/entities/fiber-core.entity';
-import { FiberCoreStatus } from '../cables/entities/fiber-core-status.entity';
-import { FiberCoreSide } from '../cables/enums/fiber-core-side.enum';
-import { FiberCoreSplitterConnection } from '../fiber-core-splitter-connections/entities/fiber-core-splitter-connection.entity';
-import { FiberCoreSplitterConnectionStatus } from '../fiber-core-splitter-connections/entities/fiber-core-splitter-connection-status.entity';
-import { FiberCoreOnuConnection } from '../fiber-core-onu-connections/entities/fiber-core-onu-connection.entity';
-import { FiberCoreOnuConnectionStatus } from '../fiber-core-onu-connections/entities/fiber-core-onu-connection-status.entity';
-import { FiberCoreOccPortConnection } from '../fiber-core-occ-port-connection/entities/fiber-core-occ-port-connection.entity';
-import { FiberCoreOccPortConnectionStatus } from '../fiber-core-occ-port-connection/entities/fiber-core-occ-port-connection-status.entity';
-import { FiberCoreSpliceClosurePortConnection } from '../fiber-core-splice-closure-port-connection/entities/fiber-core-splice-closure-port-connection.entity';
-import { FiberCoreSpliceClosurePortConnectionStatus } from '../fiber-core-splice-closure-port-connection/entities/fiber-core-splice-closure-port-connection-status.entity';
 import { CreateFiberCoreRouterPortConnectionDto } from './dto/create-fiber-core-router-port-connection.dto';
 import { Router } from '../routers/entities/router.entity';
+import { FiberCoreConnectionService } from '../fiber-core-connection/fiber-core-connection.service';
 
 @Injectable()
 export class FiberCoreRouterPortConnectionService {
 
   constructor(
     private readonly dataSource: DataSource,
+    private readonly fiberCoreConnectionService: FiberCoreConnectionService,
   ) {}
 
   // ========================================================
@@ -48,239 +40,6 @@ export class FiberCoreRouterPortConnectionService {
     return status;
   }
 
-  // ========================================================
-  // Validate Core Side
-  // ========================================================
-
-  private async validateCoreSideAvailable(
-    fiberCoreId: string,
-    fiberCoreSide: FiberCoreSide,
-    manager: EntityManager,
-  ): Promise<void> {
-
-    // ------------------------------------------------------
-    // Splitter
-    // ------------------------------------------------------
-
-    const splitterStatus = await manager
-      .getRepository(FiberCoreSplitterConnectionStatus)
-      .findOne({
-        where: { code: 'ACTIVE' },
-      });
-
-    if (splitterStatus) {
-      const existing = await manager
-        .getRepository(FiberCoreSplitterConnection)
-        .findOne({
-          where: {
-            fiberCoreId,
-            fiberCoreSide,
-            statusId: splitterStatus.id,
-          },
-        });
-
-      if (existing) {
-        throw new BadRequestException(
-          `Fiber core ${fiberCoreId} side ${fiberCoreSide} is already connected to an optical splitter.`,
-        );
-      }
-    }
-
-    // ------------------------------------------------------
-    // ONU
-    // ------------------------------------------------------
-
-    const onuStatus = await manager
-      .getRepository(FiberCoreOnuConnectionStatus)
-      .findOne({
-        where: { code: 'ACTIVE' },
-      });
-
-    if (onuStatus) {
-      const existing = await manager
-        .getRepository(FiberCoreOnuConnection)
-        .findOne({
-          where: {
-            fiberCoreId,
-            fiberCoreSide,
-            statusId: onuStatus.id,
-          },
-        });
-
-      if (existing) {
-        throw new BadRequestException(
-          `Fiber core ${fiberCoreId} side ${fiberCoreSide} is already connected to an ONU.`,
-        );
-      }
-    }
-
-    // ------------------------------------------------------
-    // OCC
-    // ------------------------------------------------------
-
-    const occStatus = await manager
-      .getRepository(FiberCoreOccPortConnectionStatus)
-      .findOne({
-        where: { code: 'ACTIVE' },
-      });
-
-    if (occStatus) {
-      const existing = await manager
-        .getRepository(FiberCoreOccPortConnection)
-        .findOne({
-          where: {
-            fiberCoreId,
-            fiberCoreSide,
-            statusId: occStatus.id,
-          },
-        });
-
-      if (existing) {
-        throw new BadRequestException(
-          `Fiber core ${fiberCoreId} side ${fiberCoreSide} is already connected to an OCC port.`,
-        );
-      }
-    }
-
-    // ------------------------------------------------------
-    // Splice Closure Port
-    // ------------------------------------------------------
-
-    const spliceClosureStatus = await manager
-      .getRepository(FiberCoreSpliceClosurePortConnectionStatus)
-      .findOne({
-        where: { code: 'ACTIVE' },
-      });
-
-    if (spliceClosureStatus) {
-      const existing = await manager
-        .getRepository(FiberCoreSpliceClosurePortConnection)
-        .findOne({
-          where: {
-            fiberCoreId,
-            fiberCoreSide,
-            statusId: spliceClosureStatus.id,
-          },
-        });
-
-      if (existing) {
-        throw new BadRequestException(
-          `Fiber core ${fiberCoreId} side ${fiberCoreSide} is already connected to a splice closure port.`,
-        );
-      }
-    }
-
-    // ------------------------------------------------------
-    // Router
-    // ------------------------------------------------------
-
-    const routerStatus = await manager
-      .getRepository(FiberCoreRouterPortConnectionStatus)
-      .findOne({
-        where: { code: 'ACTIVE' },
-      });
-
-    if (routerStatus) {
-      const existing = await manager
-        .getRepository(FiberCoreRouterPortConnection)
-        .findOne({
-          where: {
-            fiberCoreId,
-            fiberCoreSide,
-            statusId: routerStatus.id,
-          },
-        });
-
-      if (existing) {
-        throw new BadRequestException(
-          `Fiber core ${fiberCoreId} side ${fiberCoreSide} is already connected to a router port.`,
-        );
-      }
-    }
-  }
-
-  // ========================================================
-  // Update Core Status
-  // ========================================================
-
-  private async updateCoreStatus(
-    coreId: string,
-    manager: EntityManager,
-  ): Promise<void> {
-
-    let hasActiveConnection = false;
-
-    const checks = [
-      [
-        FiberCoreSplitterConnection,
-        FiberCoreSplitterConnectionStatus,
-      ],
-      [
-        FiberCoreOnuConnection,
-        FiberCoreOnuConnectionStatus,
-      ],
-      [
-        FiberCoreOccPortConnection,
-        FiberCoreOccPortConnectionStatus,
-      ],
-      [
-        FiberCoreSpliceClosurePortConnection,
-        FiberCoreSpliceClosurePortConnectionStatus,
-      ],
-      [
-        FiberCoreRouterPortConnection,
-        FiberCoreRouterPortConnectionStatus,
-      ],
-    ];
-
-    for (const [connectionEntity, statusEntity] of checks) {
-      const status = await manager
-        .getRepository(statusEntity as any)
-        .findOne({
-          where: { code: 'ACTIVE' },
-        });
-
-      if (!status) {
-        continue;
-      }
-
-      const connection = await manager
-        .getRepository(connectionEntity as any)
-        .findOne({
-          where: {
-            fiberCoreId: coreId,
-            statusId: status.id,
-          },
-        });
-
-      if (connection) {
-        hasActiveConnection = true;
-        break;
-      }
-    }
-
-    const targetStatus = await manager
-      .getRepository(FiberCoreStatus)
-      .findOne({
-        where: {
-          code: hasActiveConnection
-            ? 'IN_USE'
-            : 'AVAILABLE',
-        },
-      });
-
-    if (!targetStatus) {
-      throw new NotFoundException(
-        `Fiber Core status "${hasActiveConnection ? 'IN_USE' : 'AVAILABLE'}" not found.`,
-      );
-    }
-
-    await manager
-      .getRepository(FiberCore)
-      .update(coreId, {
-        statusId: targetStatus.id,
-      });
-  }
 
   // ========================================================
   // Increment Router Used Port Count
@@ -439,7 +198,7 @@ export class FiberCoreRouterPortConnectionService {
         // Validate Core Side
         // --------------------------------------------------
 
-        await this.validateCoreSideAvailable(
+        await this.fiberCoreConnectionService.validateCoreSideAvailable(
           dto.fiberCoreId,
           dto.fiberCoreSide,
           manager,
@@ -503,7 +262,7 @@ export class FiberCoreRouterPortConnectionService {
         // Update Fiber Core Status
         // --------------------------------------------------
 
-        await this.updateCoreStatus(
+        await this.fiberCoreConnectionService.updateCoreStatus(
           dto.fiberCoreId,
           manager,
         );
@@ -670,7 +429,7 @@ export class FiberCoreRouterPortConnectionService {
           manager,
         );
 
-        await this.updateCoreStatus(
+        await this.fiberCoreConnectionService.updateCoreStatus(
           connection.fiberCoreId,
           manager,
         );
