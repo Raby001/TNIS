@@ -161,6 +161,7 @@ if (query.conditionId) {
       properties: {
         // Handhole
         assetId: handhole.assetId,
+        assetTypeId: handhole.asset.assetType?.id ?? null, 
         type: 'HANDHOLE',
 
         // Common Asset information

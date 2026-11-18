@@ -141,6 +141,8 @@ export class TowerMapFeatureProvider
 
         assetId: tower.assetId,
 
+        assetTypeId: tower.asset.assetType?.id ?? null, 
+
         type: 'TOWER',
 
         name: tower.asset.name,

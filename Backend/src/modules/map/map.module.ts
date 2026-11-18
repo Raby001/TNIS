@@ -29,6 +29,7 @@ import { FieldObservationMapFeatureProvider } from './providers/field-observatio
 import { LcpMapFeatureProvider } from './providers/lcp-map-feature.provider';
 import { FieldObservation } from '../field-observations/entities/field-observation.entity';
 import { Lcp } from '../lcps/entities/lcp.entity';
+import { MapSymbolsModule } from '../map-symbols/map-symbols.module';
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { Lcp } from '../lcps/entities/lcp.entity';
     ]),
 
     AccessControlModule,
+    MapSymbolsModule,
   ],
 
   controllers: [

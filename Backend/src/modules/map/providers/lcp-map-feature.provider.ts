@@ -190,6 +190,8 @@ export class LcpMapFeatureProvider
 
         assetId: lcp.assetId,
 
+        assetTypeId: lcp.asset.assetType?.id ?? null, 
+
         type: 'LCP',
 
         name: lcp.asset.name,

@@ -160,6 +160,7 @@ export class ManholeMapFeatureProvider implements MapFeatureProvider {
         // Manhole
         assetId: manhole.assetId,
         type: 'MANHOLE',
+        assetTypeId: manhole.asset.assetType?.id ?? null, 
 
         // Common Asset information
         name: manhole.asset.name,

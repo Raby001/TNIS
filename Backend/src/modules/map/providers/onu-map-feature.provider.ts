@@ -193,7 +193,7 @@ export class OnuMapFeatureProvider implements MapFeatureProvider {
         // ----------------------------------------------------
 
         assetId: onu.assetId,
-
+        assetTypeId: onu.asset.assetType?.id ?? null, 
         type: 'ONU',
 
         name: onu.asset.name,
