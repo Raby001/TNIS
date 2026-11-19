@@ -71,6 +71,15 @@
               <option v-for="s in store.statuses" :key="s.id" :value="s.id">{{ s.name }}</option>
             </Select>
           </div>
+          <div v-if="isFiberCable || isTower || isClosure || isLcp">
+            <Label for="f-condition" required>Condition <span class="text-red-500">*</span></Label>
+            <Select id="f-condition" variant="asset" v-model="form.condition_id">
+              <option value="" disabled>Select condition</option>
+              <option v-for="condition in store.conditions" :key="condition.id" :value="condition.id">
+                {{ condition.name }}
+              </option>
+            </Select>
+          </div>
         </div>
       </div>
 
@@ -556,6 +565,7 @@ const emptyForm = () => ({
   serial_number: '',
   asset_type_id: '',
   status_id: '',
+  condition_id: '',
   manufacturer_id: '',
   asset_model_id: '',
   vendor_id: '',
@@ -766,6 +776,7 @@ watch(
         serial_number: props.asset.serialNumber ?? '',
         asset_type_id: props.asset.assetTypeId,
         status_id: props.asset.statusId,
+        condition_id: props.asset.conditionId ?? '',
         manufacturer_id: props.asset.manufacturerId ?? '',
         asset_model_id: props.asset.assetModelId ?? '',
         vendor_id: props.asset.vendorId ?? '',
@@ -1327,6 +1338,9 @@ function validateRequiredFields(): string | null {
   if (!form.name) return 'Name is required.'
   if (!form.asset_type_id) return 'Asset Type is required.'
   if (!isEditMode.value && !form.status_id) return 'Status is required.'
+  if (!isEditMode.value && (isFiberCable.value || isTower.value || isClosure.value || isLcp.value) && !form.condition_id) {
+    return 'Condition is required.'
+  }
   if (isFiberCable.value) {
     if (!form.cableTypeId) return 'Cable Type is required.'
     if (!form.coreCountId) return 'Core Count is required.'

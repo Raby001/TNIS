@@ -4,6 +4,7 @@ import type {
     Province,
     AssetType,
     AssetStatus,
+    AssetCondition,
     CableCoreCount,
     CableType,
     FiberCoreStatus,
@@ -35,7 +36,13 @@ export const referenceDataApi = {
 
     getStatuses() {
         return api.get<AssetStatus[]>(
-            '/reference-data/statuses',
+            '/reference-data/asset-lifecycle-statuses',
+        )
+    },
+
+    getAssetConditions() {
+        return api.get<AssetCondition[]>(
+            '/reference-data/asset-conditions',
         )
     },
 

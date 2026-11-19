@@ -17,12 +17,14 @@ import type {
   AssetType,
   AssetStatus,
 } from '../types/reference-data'
+import type { AssetCondition } from '../types/reference-data'
 import type { Site } from '../types/site'
 
 export const useAssetsStore = defineStore('assets', () => {
   const assets = ref<Asset[]>([])
   const assetTypes = ref<AssetType[]>([])
   const statuses = ref<AssetStatus[]>([])
+  const conditions = ref<AssetCondition[]>([])
   const manufacturers = ref<Manufacturer[]>([])
   const vendors = ref<Vendor[]>([])
   const assetModels = ref<AssetModel[]>([]) 
@@ -62,7 +64,7 @@ async function fetchStatusCounts(statusIds: string[], filters: Partial<Parameter
     statusIds.map(async (id) => {
       const res = await assetApi.fetchAssets({
         ...filters,
-        statusId: id,
+        lifecycleStatusId: id,
         page: 1,
         limit: 1,
       })
@@ -88,9 +90,10 @@ async function loadAssetModels(manufacturerId: string) {
 
 async function loadReferenceData() {
   try {
-    const [typesRes, statusRes, sitesRes] = await Promise.all([
+    const [typesRes, statusRes, conditionsRes, sitesRes] = await Promise.all([
       referenceDataApi.getAssetTypes(),
       referenceDataApi.getStatuses(),
+      referenceDataApi.getAssetConditions(),
       sitesApi.getAllPaginated({ page: 1, limit: 100 }),
     ])
 
@@ -101,6 +104,7 @@ async function loadReferenceData() {
       ...s,
       color: guessStatusColor(s.name),
     }))
+    conditions.value = conditionsRes.data ?? conditionsRes
 
     sites.value = sitesRes.sites ?? []
 
@@ -132,6 +136,7 @@ async function removeAsset(asset: Asset) {
     assets,
     assetTypes,
     statuses,
+    conditions,
     manufacturers,
     vendors,
     sites,

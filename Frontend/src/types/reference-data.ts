@@ -36,6 +36,12 @@ export interface AssetStatus {
     color?: 'green' | 'amber' | 'red' | 'blue' | 'slate' | 'purple' | 'teal'
 }
 
+export interface AssetCondition {
+    id: string
+    name: string
+    description?: string
+}
+
 export interface CableCoreCount {
     id: string
     coreCount: number

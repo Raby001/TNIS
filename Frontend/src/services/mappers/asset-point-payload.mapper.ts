@@ -32,7 +32,8 @@ const mapGeneralAssetDetails = (
 ): Record<string, unknown> => ({
     name: asset.name.trim(),
     assetTypeId: asset.assetTypeId!,
-    statusId: asset.statusId!,
+    lifecycleStatusId: asset.statusId!,
+    conditionId: asset.conditionId!,
     siteId: asset.siteId!,
     assetTag: asset.assetTag.trim(),
     serialNumber: asset.serialNumber,

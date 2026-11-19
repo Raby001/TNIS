@@ -59,8 +59,8 @@ export function guessStatusColor(name: string | undefined): AssetStatus['color']
 export function mapAssetFromApi(raw: RawApiAsset): Asset {
   const isPoint = raw.geometry?.type === 'Point'
   const [lng, lat] = isPoint ? raw.geometry!.coordinates : [undefined, undefined]
-  const rawStatus = typeof raw.status === 'object' ? raw.status : undefined
-  const statusName = rawStatus?.name ?? raw.statusName ?? (typeof raw.status === 'string' ? raw.status : undefined)
+  const rawStatus = typeof raw.lifecycleStatus === 'object' ? raw.lifecycleStatus : undefined
+  const statusName = rawStatus?.name ?? (typeof raw.lifecycleStatus === 'string' ? raw.lifecycleStatus : undefined)
 
   return {
     id: raw.id,
@@ -69,7 +69,8 @@ export function mapAssetFromApi(raw: RawApiAsset): Asset {
     code: raw.code ?? null,
     assetTag: raw.assetTag ?? raw.code ?? '',
     serialNumber: raw.serialNumber ?? undefined,
-    statusId: rawStatus?.id ?? raw.statusId ?? '',
+    statusId: rawStatus?.id ?? raw.lifecycleStatusId ?? '',
+    conditionId: raw.condition?.id ?? raw.conditionId,
     statusName,
     assetTypeId: raw.assetType?.id ?? raw.assetTypeId ?? '',
     siteId: raw.siteId ?? raw.site?.id,
@@ -88,7 +89,7 @@ export function mapAssetFromApi(raw: RawApiAsset): Asset {
 
     status: statusName
       ? {
-        id: rawStatus?.id ?? raw.statusId ?? '',
+        id: rawStatus?.id ?? raw.lifecycleStatusId ?? '',
         name: statusName,
         description: '',
         createdAt: '',
@@ -120,7 +121,8 @@ const createGeneralAssetPayload = (
 ): CreateAssetRequest => ({
   name: asset.name.trim(),
   assetTypeId: asset.assetTypeId!,
-  statusId: asset.statusId!,
+  lifecycleStatusId: asset.statusId!,
+  conditionId: asset.conditionId!,
   siteId: asset.siteId!,
   serialNumber: asset.serialNumber,
   description: asset.description?.trim(),
@@ -138,12 +140,14 @@ const createGeneralAssetPayload = (
 export const assetApi = {
   // ===== Read / List =====
   async fetchAssets(filters: AssetFilters = {}): Promise<FetchAssetsResult> {
+    const { statusId, ...otherFilters } = filters
     const params = {
       page: 1,
       limit: 10,
       sortBy: 'updatedAt',
       sortOrder: 'DESC' as const,
-      ...filters,
+      ...otherFilters,
+      lifecycleStatusId: filters.lifecycleStatusId ?? statusId,
     }
 
     const { data } = await api.get<{ data: RawApiAsset[]; meta: PaginationMeta }>('/assets', {
@@ -575,7 +579,11 @@ export const assetApi = {
 
   // ===== Update / Delete =====
   updateAsset(id: string, payload: Partial<Asset>) {
-    return api.patch(`/assets/${id}`, payload)
+    const { statusId, ...otherPayload } = payload
+    return api.patch(`/assets/${id}`, {
+      ...otherPayload,
+      ...(statusId ? { lifecycleStatusId: statusId } : {}),
+    })
   },
 
   async deleteAsset(asset: Asset) {

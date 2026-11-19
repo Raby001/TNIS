@@ -71,6 +71,7 @@
 
           <!-- Dropdown list -->
           <div
+            ref="cityDropdownRef"
             v-if="showCityDropdown && !loadingCities"
             class="absolute z-30 mt-1 max-h-60 w-full overflow-auto rounded-lg border border-slate-200 bg-white py-1 shadow-lg"
           >
@@ -516,12 +517,16 @@ watch(
 )
 
 const cityWrapperRef = ref<HTMLElement | null>(null)
+const cityDropdownRef = ref<HTMLElement | null>(null)
 
 function handleClickOutside(event: MouseEvent) {
   if (!showCityDropdown.value) return
 
   const target = event.target as Node
-  if (cityWrapperRef.value && cityWrapperRef.value.contains(target)) {
+  if (
+    (cityWrapperRef.value && cityWrapperRef.value.contains(target)) ||
+    (cityDropdownRef.value && cityDropdownRef.value.contains(target))
+  ) {
     return
   }
 

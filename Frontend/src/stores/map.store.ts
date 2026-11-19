@@ -318,6 +318,7 @@ export const useMapStore = defineStore('map', () => {
         return {
             assetTypeId: asset.assetTypeId ?? null,
             statusId: asset.statusId ?? null,
+            conditionId: asset.conditionId ?? null,
             siteId: asset.siteId ?? null,
 
             code: asset.code ?? '',

@@ -303,6 +303,7 @@ export interface CreateFiberCableRequest {
     name: string
     assetTypeId: string
     statusId: string
+    conditionId?: string
     siteId: string
     cableTypeId: string
     coreCountId: string
