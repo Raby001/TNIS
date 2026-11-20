@@ -282,6 +282,7 @@ export class ReferenceDataController {
   // ==========================================
 
   @Get('asset-lifecycle-statuses')
+  @Permissions('ASSET_READ')
   @ApiOperation({
     summary: 'Get all asset lifecycle statuses',
   })
@@ -294,6 +295,7 @@ export class ReferenceDataController {
   // ==========================================
 
   @Get('asset-conditions')
+  @Permissions('ASSET_READ')
   @ApiOperation({
     summary: 'Get all asset conditions',
   })
@@ -301,4 +303,43 @@ export class ReferenceDataController {
     return this.referenceDataService.findAssetConditions();
   }
 
+  // ==========================================
+  // Asset Capabilities
+  // ==========================================
+
+  @Get('asset-capabilities')
+  @Permissions('ASSET_READ')
+  findAssetCapabilities() {
+    return this.referenceDataService.findAssetCapabilities();
+  }
+
+  // ==========================================
+  // Asset Type Capabilities
+  // ==========================================
+
+  @Get('asset-type-capabilities')
+  @Permissions('ASSET_READ')
+  findAssetTypeCapabilities() {
+    return this.referenceDataService.findAssetTypeCapabilities();
+  }
+
+  // ==========================================
+  // Asset Categories
+  // ==========================================
+
+  @Get('asset-categories')
+  @Permissions('ASSET_READ')
+  findAssetCategories() {
+    return this.referenceDataService.findAssetCategories();
+  }
+
+  // ==========================================
+  // Asset Relationship Types
+  // ==========================================
+
+  @Get('asset-types-containment')
+  @Permissions('ASSET_READ')
+  findAssetContainmentTypesRule() {
+    return this.referenceDataService.findAssetContainmentTypeRule();
+  }
 }

@@ -22,6 +22,9 @@ import { seedFiberCoreSpliceClosurePortConnectionStatuses } from './fiber-core-s
 import { seedFiberCoreRouterPortConnectionStatuses } from './fiber-core-router-port-connection-status';
 import { seedAssetLifecycleStatuses } from './asset-lifecycle-status.seed';
 import { seedAssetConditions } from './asset-condition.seed';
+import { seedAssetCategories } from './asset-category.seed';
+import { seedAssetCapabilities } from './asset-capability.seed';
+import { seedAssetTypeContainmentRules } from './asset-type-containment_rules.seed';
 
 const dataSource = new DataSource({
   type: 'postgres',
@@ -42,7 +45,12 @@ async function runSeed() {
     await seedPermissions(dataSource);
     await seedRoles(dataSource);
 
+    await seedAssetCategories(dataSource);
     await seedAssetTypes(dataSource);
+    await seedAssetCapabilities(dataSource);
+
+    await seedAssetTypeContainmentRules(dataSource);
+
     await seedAssetLifecycleStatuses(dataSource);
     await seedAssetConditions(dataSource);
 

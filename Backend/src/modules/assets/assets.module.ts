@@ -15,6 +15,10 @@ import { Province } from "../locations/entities/province.entity";
 import { AssetProvinceService } from "./services/asset-province.service";
 import { AssetLifecycleStatus } from "./entities/asset-lifecycle-status.entity";
 import { AssetCondition } from "./entities/asset-condition.entity";
+import { AssetCategory } from "./entities/asset-category.entity";
+import { AssetCapability } from "./entities/asset-capability.entity";
+import { AssetTypeCapability } from "./entities/asset-type-capability.entity";
+import { AssetTypeContainmentRule } from "./entities/asset-type-containment-rules.entity";
 
 @Module({
   imports: [
@@ -29,6 +33,10 @@ import { AssetCondition } from "./entities/asset-condition.entity";
       Site, 
       User,
       FiberCableConnection,
+      AssetCategory,
+      AssetCapability,
+      AssetTypeCapability,
+      AssetTypeContainmentRule,
     ]),
     AccessControlModule
   ],
