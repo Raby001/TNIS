@@ -17,6 +17,10 @@ import { FiberCoreSpliceClosurePortConnectionStatus } from '../fiber-core-splice
 import { FiberCoreRouterPortConnectionStatus } from '../fiber-core-router-port-connections/entities/fiber-core-router-port-connection-status.entity';
 import { AssetLifecycleStatus } from 'src/modules/assets/entities/asset-lifecycle-status.entity';
 import { AssetCondition } from 'src/modules/assets/entities/asset-condition.entity';
+import { AssetCapability } from '../assets/entities/asset-capability.entity';
+import { AssetTypeCapability } from '../assets/entities/asset-type-capability.entity';
+import { AssetCategory } from '../assets/entities/asset-category.entity';
+import { AssetTypeContainmentRule } from '../assets/entities/asset-type-containment-rules.entity';
 
 @Injectable()
 export class ReferenceDataService {
@@ -68,7 +72,20 @@ export class ReferenceDataService {
     private readonly lifecycleStatusRepository: Repository<AssetLifecycleStatus>,
 
     @InjectRepository(AssetCondition)
-    private readonly assetConditionRepository: Repository<AssetCondition>,  
+    private readonly assetConditionRepository: Repository<AssetCondition>, 
+        
+    @InjectRepository(AssetCapability)
+    private readonly assetCapabilityRepository: Repository<AssetCapability>,
+
+    @InjectRepository(AssetTypeCapability)
+    private readonly assetTypeCapabilityRepository: Repository<AssetTypeCapability>,
+
+    @InjectRepository(AssetCategory)
+    private readonly assetCategoryRepository: Repository<AssetCategory>,
+
+    @InjectRepository(AssetTypeContainmentRule)
+    private readonly assetContainmentTypeRuleRepository: Repository<AssetTypeContainmentRule>,
+
   ) {}
 
   // ==========================================
@@ -275,5 +292,76 @@ export class ReferenceDataService {
     });
   }
 
+  // ==========================================
+  // Asset Capabilities
+  // ==========================================
+
+  async findAssetCapabilities() {
+    return this.assetCapabilityRepository.find({
+      where: {
+        isActive: true,
+      },
+      order: {
+        name: 'ASC',
+      },
+    });
+  }
+
+  // ==========================================
+  // Asset Type Capabilities
+  // ==========================================
+
+  async findAssetTypeCapabilities() {
+    return this.assetTypeCapabilityRepository.find({
+      relations: {
+        assetType: true,
+        capability: true,
+      },
+      order: {
+        assetType: {
+          name: 'ASC',
+        },
+        capability: {
+          name: 'ASC',
+        },
+      },
+    });
+  }
+
+  // ==========================================
+  // Asset Categories
+  // ==========================================
+
+  async findAssetCategories() {
+    return this.assetCategoryRepository.find({
+      order: {
+        name: 'ASC',
+      },
+    });
+  }
+
+  // ==========================================
+  // AssetContainmentTypeRule
+  // ==========================================
+
+  async findAssetContainmentTypeRule() {
+    return this.assetContainmentTypeRuleRepository.find({
+      where: {
+        isActive: true,
+      },
+      relations: {
+        parentAssetType: true,
+        childAssetType: true,
+      },
+      order: {
+        parentAssetType: {
+          name: 'ASC',
+        },
+        childAssetType: {
+          name: 'ASC',
+        },
+      },
+    });
+  }
 
 }
