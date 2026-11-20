@@ -19,6 +19,10 @@ import { FiberCoreSpliceClosurePortConnectionStatus } from '../fiber-core-splice
 import { FiberCoreRouterPortConnectionStatus } from '../fiber-core-router-port-connections/entities/fiber-core-router-port-connection-status.entity';
 import { AssetLifecycleStatus } from '../assets/entities/asset-lifecycle-status.entity';
 import { AssetCondition } from '../assets/entities/asset-condition.entity';
+import { AssetCapability } from '../assets/entities/asset-capability.entity';
+import { AssetTypeCapability } from '../assets/entities/asset-type-capability.entity';
+import { AssetCategory } from '../assets/entities/asset-category.entity';
+import { AssetTypeContainmentRule } from '../assets/entities/asset-type-containment-rules.entity';
 
 @Module({
   imports: [
@@ -45,6 +49,13 @@ import { AssetCondition } from '../assets/entities/asset-condition.entity';
       FiberCoreOccPortConnectionStatus,
       FiberCoreSpliceClosurePortConnectionStatus,
       FiberCoreRouterPortConnectionStatus,
+
+      AssetCapability,
+      AssetTypeCapability,
+      AssetCategory,
+
+      AssetTypeContainmentRule,
+
     ]),
     AccessControlModule,
   ],

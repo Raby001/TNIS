@@ -1,6 +1,8 @@
 import type { GeometryType } from "src/common/types/geometry.type";
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
-import { AssetTopologyMode } from "../enums/asset-topology-mode.enum";
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { AssetCategory } from "./asset-category.entity";
+import { AssetTypeCapability } from "./asset-type-capability.entity";
+import { AssetTypeContainmentRule } from "./asset-type-containment-rules.entity";
 
 @Entity('asset_types')
 export class AssetType {
@@ -14,12 +16,27 @@ export class AssetType {
   })
   name: string;
 
+  // Kept nullable temporarily to support existing records during migration.
+  @Column({ type: 'varchar', length: 50, unique: true, nullable: true })
+  code: string | null;
+
   @Column({
     type: 'varchar',
     length: 20,
     unique: true,
   })
   qualifier: string;
+
+  // Kept nullable temporarily until all existing asset types are categorized.
+  @Column({ name: 'category_id', type: 'uuid', nullable: true })
+  categoryId: string | null;
+
+  @ManyToOne(() => AssetCategory, (category) => category.assetTypes, {
+    nullable: true,
+    onDelete: 'RESTRICT',
+  })
+  @JoinColumn({ name: 'category_id' })
+  category: AssetCategory | null;
 
   @Column({
     type: 'text',
@@ -34,14 +51,6 @@ export class AssetType {
   })
   geometryType: GeometryType;
 
-  @Column({
-    name: 'topology_mode',
-    type: 'varchar',
-    length: 20,
-    default: AssetTopologyMode.PHYSICAL,
-  })
-  topologyMode: AssetTopologyMode;
-
   @CreateDateColumn({
     name: 'created_at',
     type: 'timestamptz'
@@ -53,5 +62,29 @@ export class AssetType {
     type: 'timestamptz'
   })
   updatedAt: Date;
+
+  @Column({ name: 'is_container', type: 'boolean', default: false })
+  isContainer: boolean;
+
+  @Column({ name: 'supports_custom_geometry', type: 'boolean', default: true })
+  supportsCustomGeometry: boolean;
+
+  @Column({ name: 'is_active', type: 'boolean', default: true })
+  isActive: boolean;
+
+  @OneToMany(() => AssetTypeCapability, (assignment) => assignment.assetType)
+  capabilityAssignments: AssetTypeCapability[];
+
+  @OneToMany(
+    () => AssetTypeContainmentRule,
+    (rule) => rule.parentAssetType,
+  )
+  parentContainmentRules: AssetTypeContainmentRule[];
+
+  @OneToMany(
+    () => AssetTypeContainmentRule,
+    (rule) => rule.childAssetType,
+  )
+  childContainmentRules: AssetTypeContainmentRule[];
 
 }
