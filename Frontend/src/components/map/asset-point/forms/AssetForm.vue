@@ -160,6 +160,34 @@
 
       <div>
         <FormLabel
+          label="Condition"
+          required
+        />
+
+        <select
+          v-model="form.conditionId"
+          :disabled="loadingConditions"
+          class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-100 disabled:cursor-not-allowed disabled:bg-slate-50"
+        >
+          <option :value="null">
+            {{ loadingConditions ? 'Loading conditions...' : 'Select condition' }}
+          </option>
+          <option
+            v-for="condition in conditions"
+            :key="condition.id"
+            :value="condition.id"
+          >
+            {{ condition.name }}
+          </option>
+        </select>
+
+        <p v-if="conditionError" class="mt-1.5 text-xs text-red-500">
+          {{ conditionError }}
+        </p>
+      </div>
+
+      <div>
+        <FormLabel
           label="Asset Tag"
           optional
         />
@@ -259,7 +287,7 @@ import {
 } from 'lucide-vue-next'
 
 import type { AssetFormData } from '@/types/asset'
-import type { AssetStatus } from '@/types/reference-data'
+import type { AssetCondition, AssetStatus } from '@/types/reference-data'
 import { referenceDataApi } from '@/services/api/reference-data.api'
 import { sitesApi } from '@/services/api/sites.api'
 import FormLabel from '@/components/common/FormLabel.vue'
@@ -294,6 +322,9 @@ const siteSearch = ref('')
 const statuses = ref<AssetStatus[]>([])
 const loadingStatuses = ref(false)
 const statusError = ref('')
+const conditions = ref<AssetCondition[]>([])
+const loadingConditions = ref(false)
+const conditionError = ref('')
 
 const loadSites = async () => {
   loadingSites.value = true
@@ -399,9 +430,25 @@ const loadStatuses = async () => {
   }
 }
 
+const loadConditions = async () => {
+    loadingConditions.value = true
+    conditionError.value = ''
+
+    try {
+      const response = await referenceDataApi.getAssetConditions()
+      conditions.value = response.data
+    } catch (error) {
+      console.error('Failed to load asset conditions:', error)
+      conditionError.value = 'Failed to load asset conditions.'
+    } finally {
+      loadingConditions.value = false
+  }
+}
+
 onMounted(() => {
   loadSites()
   loadStatuses()
+  loadConditions()
 
   document.addEventListener(
     'click',

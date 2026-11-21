@@ -290,6 +290,7 @@ export const createEmptyAssetPointDraft = (
     asset: {
         assetTypeId: null,
         statusId: null,
+        conditionId: null,
         siteId: null,
         assetTag: '',
         serialNumber: null,

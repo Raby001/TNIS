@@ -38,7 +38,7 @@ const mapGeneralUpdateData = (
 ) => ({
     name: asset.name.trim(),
 
-    statusId: asset.statusId!,
+    lifecycleStatusId: asset.statusId!,
 
     assetTag: asset.assetTag.trim(),
 

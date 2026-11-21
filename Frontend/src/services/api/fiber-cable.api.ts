@@ -10,14 +10,22 @@ import { api } from './api'
 
 export const fiberCableApi = {
     create(data: CreateFiberCableRequest) {
+        const { statusId, ...payload } = data
         return api.post<FiberCable>(
             '/fiber-cables',
-            data,
+            {
+                ...payload,
+                lifecycleStatusId: statusId,
+            },
         )
     },
 
     update(id: string, data: UpdateFiberCableRequest) {
-        return api.patch(`/fiber-cables/${id}`, data)
+        const { statusId, ...payload } = data
+        return api.patch(`/fiber-cables/${id}`, {
+            ...payload,
+            ...(statusId ? { lifecycleStatusId: statusId } : {}),
+        })
     },
 
     async delete(id: string) {

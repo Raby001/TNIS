@@ -71,6 +71,15 @@
               <option v-for="s in store.statuses" :key="s.id" :value="s.id">{{ s.name }}</option>
             </Select>
           </div>
+          <div v-if="isFiberCable || isTower || isClosure || isLcp">
+            <Label for="f-condition" required>Condition <span class="text-red-500">*</span></Label>
+            <Select id="f-condition" variant="asset" v-model="form.condition_id">
+              <option value="" disabled>Select condition</option>
+              <option v-for="condition in store.conditions" :key="condition.id" :value="condition.id">
+                {{ condition.name }}
+              </option>
+            </Select>
+          </div>
         </div>
       </div>
 
@@ -321,81 +330,100 @@
         -->
       </div>
 
-      <!-- <div v-if="!isEditMode">
-        <h3 class="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-500">Photos & Documents</h3>
-        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div>
-            <Label for="f-photos">Photos</Label>
+      <!-- Photos -->
+      <section class="border-t border-slate-200 pt-5">
+        <div class="flex items-baseline justify-between">
+          <h3 class="text-sm font-semibold text-slate-900">Photos</h3>
+          <span class="text-xs text-slate-500">{{ form.photos.length }} attached</span>
+        </div>
+
+        <div class="mt-3 flex flex-wrap gap-2.5">
+          <figure
+            v-for="(file, i) in form.photos"
+            :key="`${file.name}-${file.size}-${file.lastModified}-${i}`"
+            class="group relative h-24 w-32 overflow-hidden rounded-lg border border-slate-200"
+          >
+            <img
+              :src="getPreviewUrl(file)"
+              :alt="file.name"
+              class="h-full w-full object-cover"
+            />
+            <button
+              type="button"
+              class="absolute right-1 top-1 rounded-md bg-slate-900/70 p-1 text-white opacity-0 transition-opacity group-hover:opacity-100"
+              @click="removePhoto(i)"
+            >
+              <XIcon class="h-3.5 w-3.5" />
+            </button>
+            <figcaption
+              class="absolute inset-x-0 bottom-0 truncate bg-slate-900/70 px-1.5 py-1 text-[10px] text-white"
+            >
+              {{ file.name }}
+            </figcaption>
+          </figure>
+
+          <label
+            class="flex h-24 w-32 cursor-pointer flex-col items-center justify-center gap-1.5 rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 text-center transition hover:border-slate-400 hover:bg-slate-100"
+          >
+            <ImagePlusIcon class="h-5 w-5 text-slate-400" />
+            <span class="text-xs font-medium text-slate-600">Add photos</span>
             <input
-              id="f-photos"
               type="file"
               accept="image/*"
               multiple
-              class="block w-full text-sm text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-emerald-500 file:px-3 file:py-2 file:text-sm file:font-medium file:text-white hover:file:bg-emerald-600"
+              class="sr-only"
               @change="onPhotosSelected"
             />
-            <ul v-if="form.photos.length" class="mt-2 space-y-2">
-              <li
-                v-for="(file, i) in form.photos"
-                :key="i"
-                class="flex items-center gap-2 rounded-lg bg-slate-50 px-2.5 py-1.5 text-xs text-slate-600"
-              >
-                <img
-                  v-if="file.type.startsWith('image/')"
-                  :src="getPreviewUrl(file)"
-                  alt=""
-                  class="h-8 w-8 rounded-md border border-slate-200 object-cover"
-                />
-                <div
-                  v-else
-                  class="flex h-8 w-8 items-center justify-center rounded-md border border-slate-200 bg-slate-100 text-slate-500"
-                >
-                  <FileTextIcon class="h-4 w-4" />
-                </div>
-
-                <span class="truncate">{{ file.name }}</span>
-
-                <button type="button" class="ml-auto text-slate-400 hover:text-red-500" @click="removePhoto(i)">
-                  <XIcon class="h-3.5 w-3.5" />
-                </button>
-              </li>
-            </ul>
-          </div>
-          <div>
-            <Label for="f-documents">Documents</Label>
-            <input
-              id="f-documents"
-              type="file"
-              accept=".pdf,.doc,.docx,.xls,.xlsx"
-              multiple
-              class="block w-full text-sm text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-emerald-500 file:px-3 file:py-2 file:text-sm file:font-medium file:text-white hover:file:bg-emerald-600"
-              @change="onDocumentsSelected"
-            />
-            <ul v-if="form.documents.length" class="mt-2 space-y-2">
-              <li
-                v-for="(file, i) in form.documents"
-                :key="i"
-                class="flex items-center gap-2 rounded-lg bg-slate-50 px-2.5 py-1.5 text-xs text-slate-600"
-              >
-                <div
-                  class="flex h-8 w-8 shrink-0 flex-col items-center justify-center rounded-md border text-[8px] font-bold leading-none"
-                  :class="getFileIconClass(file)"
-                  :title="getFileTypeLabel(file)"
-                >
-                  <component :is="getFileIcon(file)" class="h-4 w-4" />
-                  <span>{{ getFileExtension(file) }}</span>
-                </div>
-
-                <span class="truncate">{{ file.name }}</span>
-
-                <button type="button" class="ml-auto text-slate-400 hover:text-red-500" @click="removeDocument(i)">
-                  <XIcon class="h-3.5 w-3.5" />
-                </button>
-              </li>
-            </ul>
-          </div>
+          </label>
         </div>
-      </div> -->
+      </section>
+
+      <!-- Documents -->
+      <section class="border-t border-slate-200 pt-5">
+        <div class="flex items-baseline justify-between">
+          <h3 class="text-sm font-semibold text-slate-900">Documents</h3>
+          <span class="text-xs text-slate-500">{{ form.documents.length }} attached</span>
+        </div>
+
+        <ul class="mt-3 space-y-2">
+          <li
+            v-for="(file, i) in form.documents"
+            :key="`${file.name}-${file.size}-${file.lastModified}-${i}`"
+            class="flex items-center gap-3 rounded-lg border border-slate-200 px-3 py-2.5"
+          >
+            <FileTextIcon class="h-4 w-4 shrink-0 text-slate-400" />
+            <span class="min-w-0 flex-1 truncate text-sm text-slate-800">
+              {{ file.name }}
+            </span>
+            <span class="font-mono-num shrink-0 text-xs text-slate-500">
+              {{ formatFileSize(file) }}
+            </span>
+            <button
+              type="button"
+              class="shrink-0 rounded-md p-1 text-slate-400 transition hover:bg-red-50 hover:text-red-600"
+              @click="removeDocument(i)"
+            >
+              <TrashIcon class="h-3.5 w-3.5" />
+            </button>
+          </li>
+        </ul>
+
+        <label
+          class="mt-2 flex cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 py-4 text-center transition hover:border-slate-400 hover:bg-slate-100"
+        >
+          <PaperclipIcon class="h-4 w-4 text-slate-400" />
+          <span class="text-sm font-medium text-slate-600">
+            Attach documents — PDF, DOCX, XLSX, KML
+          </span>
+          <input
+            type="file"
+            accept=".pdf,.doc,.docx,.xls,.xlsx,.kml,.kmz"
+            multiple
+            class="sr-only"
+            @change="onDocumentsSelected"
+          />
+        </label>
+      </section>
 
       <div>
         <Label for="f-description">Description</Label>
@@ -556,6 +584,7 @@ const emptyForm = () => ({
   serial_number: '',
   asset_type_id: '',
   status_id: '',
+  condition_id: '',
   manufacturer_id: '',
   asset_model_id: '',
   vendor_id: '',
@@ -766,6 +795,7 @@ watch(
         serial_number: props.asset.serialNumber ?? '',
         asset_type_id: props.asset.assetTypeId,
         status_id: props.asset.statusId,
+        condition_id: props.asset.conditionId ?? '',
         manufacturer_id: props.asset.manufacturerId ?? '',
         asset_model_id: props.asset.assetModelId ?? '',
         vendor_id: props.asset.vendorId ?? '',
@@ -1159,6 +1189,13 @@ function handleBeforeUnload(e: BeforeUnloadEvent) {
   e.returnValue = ''
 }
 
+function formatFileSize(file: File) {
+  const size = file.size ?? 0
+  if (size < 1024) return `${size} B`
+  if (size < 1024 * 1024) return `${Math.max(1, Math.round(size / 1024))} KB`
+  return `${(size / (1024 * 1024)).toFixed(1)} MB`
+}
+
 function getFileExtension(file: File) {
   const extension = file.name.split('.').pop()?.toUpperCase()
   return extension && extension.length <= 5 ? extension : 'FILE'
@@ -1197,18 +1234,17 @@ function getFileIconClass(file: File) {
 function removePhoto(index: number) {
   const file = form.photos[index]
   if (file) {
-    const url = getPreviewUrl(file)
-    if (url) URL.revokeObjectURL(url)
+    const key = `${file.name}-${file.size}-${file.lastModified}`
+    const url = previewMap.get(key)
+    if (url) {
+      URL.revokeObjectURL(url)
+      previewMap.delete(key)
+    }
   }
   form.photos.splice(index, 1)
 }
 
 function removeDocument(index: number) {
-  const file = form.documents[index]
-  if (file) {
-    const url = getPreviewUrl(file)
-    if (url) URL.revokeObjectURL(url)
-  }
   form.documents.splice(index, 1)
 }
 
@@ -1327,6 +1363,9 @@ function validateRequiredFields(): string | null {
   if (!form.name) return 'Name is required.'
   if (!form.asset_type_id) return 'Asset Type is required.'
   if (!isEditMode.value && !form.status_id) return 'Status is required.'
+  if (!isEditMode.value && (isFiberCable.value || isTower.value || isClosure.value || isLcp.value) && !form.condition_id) {
+    return 'Condition is required.'
+  }
   if (isFiberCable.value) {
     if (!form.cableTypeId) return 'Cable Type is required.'
     if (!form.coreCountId) return 'Core Count is required.'

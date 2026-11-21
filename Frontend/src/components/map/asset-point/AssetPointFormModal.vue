@@ -216,6 +216,7 @@ const currentFormComponent = computed<Component | null>(() => {
 const assetForm = reactive<AssetFormData>({
   assetTypeId: null,
   statusId: null,
+  conditionId: null,
   siteId: null,
   code: '',
 
@@ -282,6 +283,9 @@ watch(
 
         statusId:
           sourceAsset.statusId ?? null,
+
+        conditionId:
+          sourceAsset.conditionId ?? null,
 
         siteId:
           sourceAsset.siteId ?? null,

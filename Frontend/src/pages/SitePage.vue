@@ -265,6 +265,10 @@
         </div>
       </div>
 
+      <p v-if="deleteError" class="mt-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">
+        {{ deleteError }}
+      </p>
+
       <template #footer>
         <Button variant="secondary" @click="deleting = null">Cancel</Button>
         <Button
@@ -326,6 +330,7 @@ const formOpen = ref(false)
 const editing = ref<Site | null>(null)
 const deleting = ref<Site | null>(null)
 const isDeleting = ref(false)
+const deleteError = ref('')
 const pageSize = 10
 const paginationRef = ref<HTMLElement | null>(null)
 
@@ -388,7 +393,7 @@ async function loadPage(page: number, keepPaginationVisible = false) {
     type: filters.type || undefined,
     page,
     limit: pageSize,
-    sortBy: 'createdAt',
+    sortBy: 'updatedAt',
     sortOrder: 'DESC',
   })
 
@@ -433,13 +438,17 @@ async function loadProvinces() {
 
 async function confirmDelete() {
   if (!deleting.value) return
+  deleteError.value = ''
   isDeleting.value = true
   try {
     await store.deleteSite(deleting.value.id)
     deleting.value = null
-  } catch (err) {
+  } catch (err: any) {
     console.error(err)
-    alert('Failed to delete site')
+    deleteError.value =
+      err?.response?.data?.message ??
+      err?.message ??
+      'Failed to delete site. Please try again.'
   } finally {
     isDeleting.value = false
   }
@@ -447,7 +456,7 @@ async function confirmDelete() {
 
 function handleSaved() {
   closeFormModal()
-  loadPage(currentPage.value)
+  loadPage(1)
 }
 
 let searchTimeout: ReturnType<typeof setTimeout>
