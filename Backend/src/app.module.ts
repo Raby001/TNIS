@@ -1,3 +1,5 @@
+import { AuditLogsModule } from './modules/audit-logs/audit-logs.module';
+import { AuditActorSubscriber } from './modules/audit-logs/audit-actor';
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -65,6 +67,7 @@ import { FiberCoreConnectionModule } from './modules/fiber-core-connection/fiber
           database: config.get<string>('database.database'),
 
           autoLoadEntities: true,
+          subscribers: [AuditActorSubscriber],
           synchronize: true,
 
           // logging: ['query', 'error'],
@@ -77,6 +80,7 @@ import { FiberCoreConnectionModule } from './modules/fiber-core-connection/fiber
     AccessControlModule,
     RolesModule,
 
+    AuditLogsModule,
     AssetsModule,
 
     SitesModule, 
