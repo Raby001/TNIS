@@ -40,20 +40,10 @@ import type {
   LcpDetailResponse,
 } from '@/types/lcp'
 import { mapAssetPointUpdatePayload } from '../mappers/asset-point-update.mapper'
+import { getStatusMeta } from '../../utils/statusMeta'
 
 export function guessStatusColor(name: string | undefined): AssetStatus['color'] {
-  const map: Record<string, AssetStatus['color']> = {
-    'In Service': 'green',
-    'Installed': 'teal',
-    'In Stock': 'blue',
-    'Planned': 'slate',
-    'Decommissioned': 'slate',
-    'Scrapped': 'slate',
-    'Under Maintenance': 'purple',
-    'Under Repair': 'amber',
-    'Faulty': 'red',
-  }
-  return name ? map[name] ?? 'slate' : 'slate'
+  return getStatusMeta(name).color
 }
 
 export function mapAssetFromApi(raw: RawApiAsset): Asset {

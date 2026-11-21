@@ -8,7 +8,7 @@
         : 'Register a new physical site and attach supporting photos and documents.'
     "
     width-class="max-w-6xl"
-    @close="$emit('close')"
+    @close="requestClose"
   >
     <form class="space-y-6" @submit.prevent="submit">
       <!-- Basic info -->
@@ -263,13 +263,41 @@
     </form>
 
     <template #footer>
-      <Button variant="secondary" @click="$emit('close')" class="rounded-xl border border-red-600 bg-red-600 text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-red-700 hover:shadow-md">Cancel</Button>
+      <Button variant="secondary" @click="requestClose" class="rounded-xl border border-red-600 bg-red-600 text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-red-700 hover:shadow-md">Cancel</Button>
       <Button
         :disabled="!canSubmit || saving"
         @click="submit"
         class="rounded-xl border border-blue-600 bg-blue-600 text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-blue-700 hover:shadow-md"
       >
         {{ saving ? 'Saving…' : isEdit ? 'Save changes' : 'Create site' }}
+      </Button>
+    </template>
+  </Modal>
+
+  <Modal
+    :open="showDiscardConfirm"
+    title="Discard unsaved changes?"
+    description="Anything you have entered will be lost. This cannot be undone."
+    width-class="max-w-sm"
+    @close="showDiscardConfirm = false"
+  >
+    <p class="text-sm text-slate-600">
+      To keep working, close this and choose <span class="font-medium">Keep editing</span>.
+    </p>
+
+    <template #footer>
+      <Button
+        variant="secondary"
+        @click="showDiscardConfirm = false"
+        class="rounded-xl"
+      >
+        Keep editing
+      </Button>
+      <Button
+        @click="confirmDiscard"
+        class="rounded-xl border border-red-600 bg-red-600 text-white hover:bg-red-700"
+      >
+        Discard changes
       </Button>
     </template>
   </Modal>
@@ -329,13 +357,36 @@ const emptyDraft = () => ({
 
 const draft = reactive(emptyDraft())
 const attachments = ref<ModalAttachment[]>([])
+const isLoading = ref(false)
+const showDiscardConfirm = ref(false)
+const initialFingerprint = ref('')
 
 let attachmentSeq = 100
+
+function formFingerprint() {
+  return JSON.stringify({
+    draft: { ...draft },
+    attachments: attachments.value.map((a) => ({
+      id: a.id ?? '',
+      kind: a.kind,
+      name: a.name ?? '',
+      url: a.url ?? '',
+      size: a.size ?? '',
+    })),
+  })
+}
+
+const isDirty = computed(
+  () => !isLoading.value && formFingerprint() !== initialFingerprint.value,
+)
 
 watch(
   () => [props.open, props.site],
   () => {
     if (!props.open) return
+
+    isLoading.value = true
+    showDiscardConfirm.value = false
 
     if (props.site) {
       Object.assign(draft, {
@@ -354,6 +405,9 @@ watch(
       Object.assign(draft, emptyDraft())
       attachments.value = []
     }
+
+    initialFingerprint.value = formFingerprint()
+    isLoading.value = false
   },
   { immediate: true },
 )
@@ -376,7 +430,7 @@ function onFileChange(event: Event, kind: 'photo' | 'document') {
   const files = input.files
   if (!files) return
 
-  const next: SiteAttachment[] = Array.from(files).map((file) => ({
+  const next: ModalAttachment[] = Array.from(files).map((file) => ({
     id: `AT-${attachmentSeq++}`,
     name: file.name,
     kind,
@@ -390,6 +444,36 @@ function onFileChange(event: Event, kind: 'photo' | 'document') {
 
 function removeAttachment(id: string) {
   attachments.value = attachments.value.filter((a) => a.id !== id)
+}
+
+function requestClose() {
+  if (!isDirty.value) {
+    showDiscardConfirm.value = false
+    emit('close')
+    return
+  }
+  showDiscardConfirm.value = true
+}
+
+function confirmDiscard() {
+  showDiscardConfirm.value = false
+  emit('close')
+}
+
+function handleKeydown(e: KeyboardEvent) {
+  if (e.key !== 'Escape') return
+
+  if (showDiscardConfirm.value) {
+    showDiscardConfirm.value = false
+    return
+  }
+  if (props.open) requestClose()
+}
+
+function handleBeforeUnload(e: BeforeUnloadEvent) {
+  if (!props.open || !isDirty.value) return
+  e.preventDefault()
+  e.returnValue = ''
 }
 
 async function submit() {
@@ -535,9 +619,13 @@ function handleClickOutside(event: MouseEvent) {
 
 onMounted(() => {
   document.addEventListener('mousedown', handleClickOutside)
+  document.addEventListener('keydown', handleKeydown)
+  window.addEventListener('beforeunload', handleBeforeUnload)
 })
 
 onBeforeUnmount(() => {
   document.removeEventListener('mousedown', handleClickOutside)
+  document.removeEventListener('keydown', handleKeydown)
+  window.removeEventListener('beforeunload', handleBeforeUnload)
 })
 </script>

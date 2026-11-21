@@ -18,15 +18,33 @@
       </Button>
     </div>
 
-    <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-      <StatCard
-        label="Total"
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <MetricCard
+        label="Total assets"
         :value="store.pagination.total"
-        :active="filters.statusId === ''"
-        dot-class="bg-slate-900"
-        value-class="text-slate-900"
-        @click="showAll"
+        :hint="`${store.assets.length} loaded`"
+        :icon="PackagePlusIcon"
+        tone="blue"
+        clickable
+        @click="clearStatusFilter"
       />
+      <MetricCard
+        label="With attachments"
+        :value="assetsWithAttachments"
+        hint="Assets that have photos or documents"
+        :icon="FileTextIcon"
+        tone="emerald"
+      />
+      <MetricCard
+        label="Total attachments"
+        :value="attachmentTotal"
+        hint="Photos and documents across loaded assets"
+        :icon="ImageIcon"
+        tone="violet"
+      />
+    </div>
+
+    <div class="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
       <StatCard
         v-for="status in assetLevelStatuses"
         :key="status.id"
@@ -78,13 +96,14 @@
               <th class="px-4 py-2.5 font-medium">Type</th>
               <!-- <th class="px-4 py-2.5 font-medium">Manufacturer / Model</th> -->
               <th class="px-4 py-2.5 font-medium">Status</th>
+              <th class="px-4 py-2.5 font-medium">Files</th>
               <th class="px-4 py-2.5 font-medium">Last Update</th>
               <th class="px-4.5 py-2.5 text-left font-medium">Action</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100">
             <tr v-if="store.isLoading">
-              <td colspan="7" class="px-4 py-12 text-center text-sm text-slate-500">Loading assets…</td>
+              <td colspan="8" class="px-4 py-12 text-center text-sm text-slate-500">Loading assets…</td>
             </tr>
             <tr
               v-for="asset in filteredAssets"
@@ -107,6 +126,18 @@
                   :color="store.statuses.find((status) => status.id === asset.statusId)?.color"
                   size="sm"
                 />
+              </td>
+              <td class="px-4 py-3">
+                <span class="flex items-center gap-3 text-xs text-slate-600">
+                  <span class="inline-flex items-center gap-1">
+                    <ImageIcon class="h-3.5 w-3.5 text-slate-400" />
+                    {{ countPhotos(asset) }}
+                  </span>
+                  <span class="inline-flex items-center gap-1">
+                    <FileTextIcon class="h-3.5 w-3.5 text-slate-400" />
+                    {{ countDocs(asset) }}
+                  </span>
+                </span>
               </td>
               <td class="px-4 py-3 text-slate-600">
                 <p>{{ formatOrdinalDate(asset.updatedAt) }}</p>
@@ -201,7 +232,7 @@
               </td>
             </tr>
             <tr v-if="!store.isLoading && filteredAssets.length === 0">
-              <td colspan="7" class="px-4 py-12 text-center text-sm text-slate-500">
+              <td colspan="8" class="px-4 py-12 text-center text-sm text-slate-500">
                 No assets match those filters.
               </td>
             </tr>
@@ -280,7 +311,7 @@
 
 <script setup lang="ts">
 import { computed, nextTick, onMounted, reactive, ref, onBeforeUnmount, watch } from 'vue'
-import { PackagePlusIcon, SearchIcon, ChevronDownIcon, PencilIcon, FileTextIcon, HistoryIcon, ArchiveIcon, Trash2Icon, CableIcon, PlugIcon, EyeIcon, ChevronLeftIcon, ChevronRightIcon, Link2Icon } from 'lucide-vue-next'
+import { PackagePlusIcon, SearchIcon, ChevronDownIcon, PencilIcon, FileTextIcon, HistoryIcon, ArchiveIcon, Trash2Icon, CableIcon, PlugIcon, EyeIcon, ChevronLeftIcon, ChevronRightIcon, Link2Icon, ImageIcon } from 'lucide-vue-next'
 import { useAssetsStore } from '../stores/assets'
 import { useAuthStore } from '../stores/auth'
 import type { Asset } from '../types/asset'
@@ -288,6 +319,7 @@ import { assetApi } from '../services/api/asset.api.ts'
 import { statusColorMap } from '../utils/statusColors'
 import { formatOrdinalDate } from '../utils/formatDate'
 import StatCard from '../components/ui/StatCard.vue'
+import MetricCard from '../components/ui/MetricCard.vue'
 import Badge from '../components/ui/Badge.vue'
 import Button from '../components/ui/button.vue'
 import Input from '../components/ui/input.vue'
@@ -343,6 +375,13 @@ function toggleStatusFilter(statusId: string) {
   reload()
 }
 
+function clearStatusFilter() {
+  if (!filters.statusId) return
+  filters.statusId = ''
+  filters.page = 1
+  reload()
+}
+
 function showAll() {
   filters.statusId = ''
   filters.page = 1
@@ -385,6 +424,22 @@ const filteredAssets = computed(() => {
     return matchesSearch && matchesType && matchesProject && matchesSite && matchesStatus
   })
 })
+
+const assetsWithAttachments = computed(
+  () => store.assets.filter((asset) => countPhotos(asset) + countDocs(asset) > 0).length,
+)
+
+const attachmentTotal = computed(
+  () => store.assets.reduce((sum, asset) => sum + countPhotos(asset) + countDocs(asset), 0),
+)
+
+function countPhotos(asset: Asset) {
+  return asset.attachments?.photos?.length ?? 0
+}
+
+function countDocs(asset: Asset) {
+  return asset.attachments?.documents?.length ?? 0
+}
 
 watch(() => filters.siteId, () => {
   filters.page = 1
