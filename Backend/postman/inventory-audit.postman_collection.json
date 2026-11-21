@@ -1,0 +1,880 @@
+{
+  "info": {
+    "name": "TNIS inventory audit",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Run in order against an approved test environment after the SQL migration is applied. Set baseUrl (including /api/v2), adminUsername, and local-only adminToken/viewerToken variables from POST /auth/login. Supply an existing siteId, a poleTypeId, lifecycleStatusId and conditionId using sites and reference-data endpoints. Requests create, update and delete one new pole, leaving its audit entries. The failed update tests validation. Backend/test/audit-rollback.sql separately exercises an actual database rollback. Saved response examples are illustrative."
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{adminToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000/api/v2",
+      "type": "string"
+    },
+    {
+      "key": "adminUsername",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "poleTypeId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "siteId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "lifecycleStatusId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "conditionId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Create a pole asset for this run",
+      "request": {
+        "method": "POST",
+        "url": {
+          "raw": "{{baseUrl}}/poles",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "poles"
+          ]
+        },
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "description": "Create a pole asset for this run",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"assetTypeId\": \"{{poleTypeId}}\",\n  \"lifecycleStatusId\": \"{{lifecycleStatusId}}\",\n  \"conditionId\": \"{{conditionId}}\",\n  \"siteId\": \"{{siteId}}\",\n  \"name\": \"{{fixtureName}}\",\n  \"heightM\": 10,\n  \"geometry\": {\n    \"type\": \"Point\",\n    \"coordinates\": [\n      104.9173,\n      11.5624\n    ]\n  }\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "for (const key of ['fixtureId','auditId','userId','firstPageId']) pm.collectionVariables.unset(key);",
+              "pm.collectionVariables.set('fixtureName', 'Audit fixture ' + pm.variables.replaceIn('{{$guid}}'));",
+              "pm.collectionVariables.set('from', new Date(Date.now()-3600000).toISOString());",
+              "pm.collectionVariables.set('to', new Date(Date.now()+3600000).toISOString());"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+              "pm.test('Store only the pole created for this run', () => {",
+              "  const pole = pm.response.json();",
+              "  pm.expect(pole.asset.name).to.equal(pm.collectionVariables.get('fixtureName'));",
+              "  pm.expect(pole.assetId).to.match(/^[0-9a-f-]{36}$/i);",
+              "  pm.collectionVariables.set('fixtureId', pole.assetId);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "Verify committed asset CREATE and its actor",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/audit-logs?entityType=assets&entityId={{fixtureId}}&action=CREATE",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "audit-logs"
+          ],
+          "query": [
+            {
+              "key": "entityType",
+              "value": "assets"
+            },
+            {
+              "key": "entityId",
+              "value": "{{fixtureId}}"
+            },
+            {
+              "key": "action",
+              "value": "CREATE"
+            }
+          ]
+        },
+        "header": [],
+        "description": "Verify committed asset CREATE and its actor"
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const createdId = pm.collectionVariables.get('fixtureId');",
+              "if (!createdId) throw new Error('Create the fixture successfully before running this request');",
+              "pm.variables.set('fixtureId', createdId);"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Exactly one CREATE belongs to the expected admin', () => {",
+              "  const {data,meta} = pm.response.json();",
+              "  pm.expect(meta.total).to.equal(1);",
+              "  const row = data[0];",
+              "  pm.expect(row.entityId).to.equal(pm.collectionVariables.get('fixtureId'));",
+              "  pm.expect(row.username).to.equal(pm.variables.get('adminUsername'));",
+              "  pm.expect(row.userId).to.be.a('string');",
+              "  pm.expect(row.oldValues).to.equal(null);",
+              "  pm.expect(row.newValues.name).to.equal(pm.collectionVariables.get('fixtureName'));",
+              "  pm.collectionVariables.set('userId', row.userId);",
+              "  pm.collectionVariables.set('auditId', row.id);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "Read one history entry as admin",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/audit-logs/{{auditId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "audit-logs",
+            "{{auditId}}"
+          ]
+        },
+        "header": [],
+        "description": "Read one history entry as admin"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Matches the created entry', () => pm.expect(pm.response.json().id).to.equal(pm.collectionVariables.get('auditId')));"
+            ]
+          }
+        }
+      ],
+      "response": [
+        {
+          "name": "Illustrative response",
+          "originalRequest": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/audit-logs/{{auditId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "audit-logs",
+                "{{auditId}}"
+              ]
+            },
+            "header": [],
+            "description": "Read one history entry as admin"
+          },
+          "status": "OK",
+          "code": 200,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"id\": \"b5b738a7-c657-4e1c-8a74-a775caf74216\",\n  \"userId\": \"e607dcc4-a72c-4222-8680-766d4e52e53e\",\n  \"username\": \"example-admin\",\n  \"action\": \"UPDATE\",\n  \"entityType\": \"poles\",\n  \"entityId\": \"52017009-e4ce-4655-8780-05cb302c7cbe\",\n  \"description\": \"UPDATE poles\",\n  \"oldValues\": {\n    \"height_m\": 10\n  },\n  \"newValues\": {\n    \"height_m\": 12\n  },\n  \"createdAt\": \"2026-11-21T12:00:00.123Z\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "Reject viewer list access",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/audit-logs",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "audit-logs"
+          ]
+        },
+        "header": [],
+        "description": "Reject viewer list access",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{viewerToken}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 403', () => pm.response.to.have.status(403));",
+              ""
+            ]
+          }
+        }
+      ],
+      "response": [
+        {
+          "name": "Illustrative response",
+          "originalRequest": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/audit-logs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "audit-logs"
+              ]
+            },
+            "header": [],
+            "description": "Reject viewer list access",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{viewerToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "status": "Forbidden",
+          "code": 403,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"message\": \"Forbidden resource\",\n  \"error\": \"Forbidden\",\n  \"statusCode\": 403\n}"
+        }
+      ]
+    },
+    {
+      "name": "Reject viewer detail access",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/audit-logs/{{auditId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "audit-logs",
+            "{{auditId}}"
+          ]
+        },
+        "header": [],
+        "description": "Reject viewer detail access",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{viewerToken}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 403', () => pm.response.to.have.status(403));",
+              ""
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "Update the fixture height",
+      "request": {
+        "method": "PATCH",
+        "url": {
+          "raw": "{{baseUrl}}/poles/{{fixtureId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "poles",
+            "{{fixtureId}}"
+          ]
+        },
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "description": "Update the fixture height",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"heightM\": 12\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const createdId = pm.collectionVariables.get('fixtureId');",
+              "if (!createdId) throw new Error('Create the fixture successfully before running this request');",
+              "pm.variables.set('fixtureId', createdId);"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              ""
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "Filter by actor, action, entity and time",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/audit-logs?userId={{userId}}&entityType=poles&entityId={{fixtureId}}&action=UPDATE&from={{from}}&to={{to}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "audit-logs"
+          ],
+          "query": [
+            {
+              "key": "userId",
+              "value": "{{userId}}"
+            },
+            {
+              "key": "entityType",
+              "value": "poles"
+            },
+            {
+              "key": "entityId",
+              "value": "{{fixtureId}}"
+            },
+            {
+              "key": "action",
+              "value": "UPDATE"
+            },
+            {
+              "key": "from",
+              "value": "{{from}}"
+            },
+            {
+              "key": "to",
+              "value": "{{to}}"
+            }
+          ]
+        },
+        "header": [],
+        "description": "Filter by actor, action, entity and time"
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const createdId = pm.collectionVariables.get('fixtureId');",
+              "if (!createdId) throw new Error('Create the fixture successfully before running this request');",
+              "pm.variables.set('fixtureId', createdId);"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Only the changed height is returned', () => {",
+              "  const {data,meta} = pm.response.json();",
+              "  pm.expect(meta.total).to.equal(1);",
+              "  pm.expect(data[0].userId).to.equal(pm.collectionVariables.get('userId'));",
+              "  pm.expect(data[0].action).to.equal('UPDATE');",
+              "  pm.expect(data[0].oldValues).to.deep.equal({height_m:10});",
+              "  pm.expect(data[0].newValues).to.deep.equal({height_m:12});",
+              "});"
+            ]
+          }
+        }
+      ],
+      "response": [
+        {
+          "name": "Illustrative response",
+          "originalRequest": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/audit-logs?userId={{userId}}&entityType=poles&entityId={{fixtureId}}&action=UPDATE&from={{from}}&to={{to}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "audit-logs"
+              ],
+              "query": [
+                {
+                  "key": "userId",
+                  "value": "{{userId}}"
+                },
+                {
+                  "key": "entityType",
+                  "value": "poles"
+                },
+                {
+                  "key": "entityId",
+                  "value": "{{fixtureId}}"
+                },
+                {
+                  "key": "action",
+                  "value": "UPDATE"
+                },
+                {
+                  "key": "from",
+                  "value": "{{from}}"
+                },
+                {
+                  "key": "to",
+                  "value": "{{to}}"
+                }
+              ]
+            },
+            "header": [],
+            "description": "Filter by actor, action, entity and time"
+          },
+          "status": "OK",
+          "code": 200,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"data\": [\n    {\n      \"id\": \"b5b738a7-c657-4e1c-8a74-a775caf74216\",\n      \"userId\": \"e607dcc4-a72c-4222-8680-766d4e52e53e\",\n      \"username\": \"example-admin\",\n      \"action\": \"UPDATE\",\n      \"entityType\": \"poles\",\n      \"entityId\": \"52017009-e4ce-4655-8780-05cb302c7cbe\",\n      \"description\": \"UPDATE poles\",\n      \"oldValues\": {\n        \"height_m\": 10\n      },\n      \"newValues\": {\n        \"height_m\": 12\n      },\n      \"createdAt\": \"2026-11-21T12:00:00.123Z\"\n    }\n  ],\n  \"meta\": {\n    \"page\": 1,\n    \"limit\": 20,\n    \"total\": 1,\n    \"totalPages\": 1\n  }\n}"
+        }
+      ]
+    },
+    {
+      "name": "Reject invalid fixture update",
+      "request": {
+        "method": "PATCH",
+        "url": {
+          "raw": "{{baseUrl}}/poles/{{fixtureId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "poles",
+            "{{fixtureId}}"
+          ]
+        },
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "description": "Reject invalid fixture update",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"heightM\": -1\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const createdId = pm.collectionVariables.get('fixtureId');",
+              "if (!createdId) throw new Error('Create the fixture successfully before running this request');",
+              "pm.variables.set('fixtureId', createdId);"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 400', () => pm.response.to.have.status(400));",
+              ""
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "Verify failed update added no successful history",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/audit-logs?entityType=poles&entityId={{fixtureId}}&action=UPDATE",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "audit-logs"
+          ],
+          "query": [
+            {
+              "key": "entityType",
+              "value": "poles"
+            },
+            {
+              "key": "entityId",
+              "value": "{{fixtureId}}"
+            },
+            {
+              "key": "action",
+              "value": "UPDATE"
+            }
+          ]
+        },
+        "header": [],
+        "description": "Verify failed update added no successful history"
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const createdId = pm.collectionVariables.get('fixtureId');",
+              "if (!createdId) throw new Error('Create the fixture successfully before running this request');",
+              "pm.variables.set('fixtureId', createdId);"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Successful update count stays at one', () => pm.expect(pm.response.json().meta.total).to.equal(1));"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "Delete only the created fixture",
+      "request": {
+        "method": "DELETE",
+        "url": {
+          "raw": "{{baseUrl}}/poles/{{fixtureId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "poles",
+            "{{fixtureId}}"
+          ]
+        },
+        "header": [],
+        "description": "Delete only the created fixture"
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const createdId = pm.collectionVariables.get('fixtureId');",
+              "if (!createdId) throw new Error('Create the fixture successfully before running this request');",
+              "pm.variables.set('fixtureId', createdId);"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              ""
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "Verify committed DELETE",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/audit-logs?entityType=assets&entityId={{fixtureId}}&action=DELETE",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "audit-logs"
+          ],
+          "query": [
+            {
+              "key": "entityType",
+              "value": "assets"
+            },
+            {
+              "key": "entityId",
+              "value": "{{fixtureId}}"
+            },
+            {
+              "key": "action",
+              "value": "DELETE"
+            }
+          ]
+        },
+        "header": [],
+        "description": "Verify committed DELETE"
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const createdId = pm.collectionVariables.get('fixtureId');",
+              "if (!createdId) throw new Error('Create the fixture successfully before running this request');",
+              "pm.variables.set('fixtureId', createdId);"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Deleted asset retains its old values', () => {",
+              "  const {data,meta} = pm.response.json();",
+              "  pm.expect(meta.total).to.equal(1);",
+              "  pm.expect(data[0].oldValues.name).to.equal(pm.collectionVariables.get('fixtureName'));",
+              "  pm.expect(data[0].newValues).to.equal(null);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "Ascending history, page 1",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/audit-logs?entityType=poles&entityId={{fixtureId}}&page=1&limit=1&sortBy=createdAt&sortOrder=ASC",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "audit-logs"
+          ],
+          "query": [
+            {
+              "key": "entityType",
+              "value": "poles"
+            },
+            {
+              "key": "entityId",
+              "value": "{{fixtureId}}"
+            },
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "limit",
+              "value": "1"
+            },
+            {
+              "key": "sortBy",
+              "value": "createdAt"
+            },
+            {
+              "key": "sortOrder",
+              "value": "ASC"
+            }
+          ]
+        },
+        "header": [],
+        "description": "Ascending history, page 1"
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const createdId = pm.collectionVariables.get('fixtureId');",
+              "if (!createdId) throw new Error('Create the fixture successfully before running this request');",
+              "pm.variables.set('fixtureId', createdId);"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Expected ordered fixture event and page metadata', () => {",
+              "  const {data,meta} = pm.response.json();",
+              "  pm.expect(meta).to.deep.equal({page:1,limit:1,total:3,totalPages:3});",
+              "  pm.expect(data).to.have.lengthOf(1);",
+              "  pm.expect(data[0].action).to.equal('CREATE');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "Ascending history, page 2",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/audit-logs?entityType=poles&entityId={{fixtureId}}&page=2&limit=1&sortBy=createdAt&sortOrder=ASC",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "audit-logs"
+          ],
+          "query": [
+            {
+              "key": "entityType",
+              "value": "poles"
+            },
+            {
+              "key": "entityId",
+              "value": "{{fixtureId}}"
+            },
+            {
+              "key": "page",
+              "value": "2"
+            },
+            {
+              "key": "limit",
+              "value": "1"
+            },
+            {
+              "key": "sortBy",
+              "value": "createdAt"
+            },
+            {
+              "key": "sortOrder",
+              "value": "ASC"
+            }
+          ]
+        },
+        "header": [],
+        "description": "Ascending history, page 2"
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const createdId = pm.collectionVariables.get('fixtureId');",
+              "if (!createdId) throw new Error('Create the fixture successfully before running this request');",
+              "pm.variables.set('fixtureId', createdId);"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Expected ordered fixture event and page metadata', () => {",
+              "  const {data,meta} = pm.response.json();",
+              "  pm.expect(meta).to.deep.equal({page:2,limit:1,total:3,totalPages:3});",
+              "  pm.expect(data).to.have.lengthOf(1);",
+              "  pm.expect(data[0].action).to.equal('UPDATE');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "response": []
+    }
+  ]
+}
